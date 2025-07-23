@@ -43,6 +43,26 @@ function performInstallation($data) {
         $pdo = new PDO("mysql:host={$data['db_host']};dbname={$data['db_name']}", $data['db_user'], $data['db_pass']);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+        // Check if tables already exist
+        $existingTables = checkExistingTables($pdo);
+        if (!empty($existingTables)) {
+            // If tables exist, just update the .env file and add admin user
+            $env_content = generateEnvContent($data);
+            if (file_put_contents('.env', $env_content) === false) {
+                return ['success' => false, 'error' => 'Could not create .env file. Check file permissions.'];
+            }
+
+            // Generate app key
+            $app_key = 'base64:' . base64_encode(random_bytes(32));
+            $env_content = str_replace('APP_KEY=', 'APP_KEY=' . $app_key, $env_content);
+            file_put_contents('.env', $env_content);
+
+            // Add admin user if it doesn't exist
+            addAdminUserIfNotExists($pdo, $data);
+
+            return ['success' => true, 'data' => $data, 'message' => 'Application configured successfully. Tables already existed.'];
+        }
+
         // Create .env file
         $env_content = generateEnvContent($data);
         if (file_put_contents('.env', $env_content) === false) {
@@ -69,6 +89,37 @@ function performInstallation($data) {
     }
 }
 
+function checkExistingTables($pdo) {
+    $existingTables = [];
+    $tables = ['users', 'distributors', 'customers', 'products', 'couriers', 'orders', 'order_product', 'order_status_histories', 'settings', 'notifications'];
+    
+    foreach ($tables as $table) {
+        try {
+            $stmt = $pdo->query("SHOW TABLES LIKE '$table'");
+            if ($stmt->rowCount() > 0) {
+                $existingTables[] = $table;
+            }
+        } catch (Exception $e) {
+            // Table doesn't exist
+        }
+    }
+    
+    return $existingTables;
+}
+
+function addAdminUserIfNotExists($pdo, $data) {
+    // Check if admin user already exists
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+    $stmt->execute([$data['admin_email']]);
+    
+    if ($stmt->rowCount() == 0) {
+        // Create admin user
+        $hashed_password = password_hash($data['admin_password'], PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'admin')");
+        $stmt->execute(['Admin User', $data['admin_email'], $hashed_password]);
+    }
+}
+
 function createCompleteDatabaseSchema($pdo) {
     // Disable foreign key checks temporarily
     $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
@@ -81,6 +132,7 @@ function createCompleteDatabaseSchema($pdo) {
     $pdo->exec("DROP TABLE IF EXISTS distributors");
     $pdo->exec("DROP TABLE IF EXISTS notifications");
     $pdo->exec("DROP TABLE IF EXISTS products");
+    $pdo->exec("DROP TABLE IF EXISTS couriers");
     $pdo->exec("DROP TABLE IF EXISTS users");
     $pdo->exec("DROP TABLE IF EXISTS settings");
 
@@ -419,6 +471,7 @@ function showInstallationForm() {
 }
 
 function showSuccessPage($result) {
+    $message = isset($result['message']) ? $result['message'] : 'Your Brayne Jewelry Manager has been successfully installed.';
     ?>
     <!DOCTYPE html>
     <html lang="en">
@@ -441,7 +494,7 @@ function showSuccessPage($result) {
                             <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
                         </div>
                         <h2 class="text-success">Installation Complete!</h2>
-                        <p class="text-muted">Your Brayne Jewelry Manager has been successfully installed.</p>
+                        <p class="text-muted"><?= htmlspecialchars($message) ?></p>
                         
                         <div class="alert alert-info text-start">
                             <h5><i class="fas fa-info-circle"></i> Login Credentials:</h5>
