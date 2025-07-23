@@ -1,0 +1,42 @@
+Brayne Jewelry Manager - Installable Package
+============================================
+
+This package contains everything needed to install Brayne Jewelry Manager
+on any cPanel hosting with PHP 8.2+ and MySQL.
+
+INSTALLATION INSTRUCTIONS:
+1. Upload all files to your domain root (public_html)
+2. Visit: https://yourdomain.com/install
+3. Follow the web-based installer
+4. Complete the setup in 5 minutes
+
+REQUIREMENTS:
+- PHP 8.2 or higher
+- MySQL 5.7 or higher
+- cPanel hosting (or similar)
+
+FEATURES INCLUDED:
+- Complete jewelry management system
+- Role-based access control (Admin, Distributor, Factory)
+- Order management with templates
+- Real-time notifications
+- Modern responsive design
+- Production-ready security
+
+DEFAULT LOGIN CREDENTIALS:
+- Admin: (set during installation)
+- Distributor: distributor1@jewelry.com / password
+- Factory: factory@jewelry.com / password
+
+SECURITY NOTES:
+- Change default passwords after installation
+- Delete the /install directory after setup
+- Enable SSL certificate
+- Set up regular backups
+
+SUPPORT:
+- GitHub: https://github.com/braynedigi/brayne-jewelry-manager
+- Documentation: Included in the package
+
+Version: 1.0.0
+Release Date: July 2025 

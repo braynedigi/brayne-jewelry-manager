@@ -1,0 +1,340 @@
+<?php
+/**
+ * Brayne Jewelry Manager - Standalone Installer
+ * 
+ * Place this file in your domain root and visit: https://yourdomain.com/install.php
+ */
+
+// Check if already installed
+if (file_exists('.env') && !isset($_GET['force'])) {
+    die('
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+        <h2 style="color: #333;">🏪 Brayne Jewelry Manager</h2>
+        <p style="color: #666;">Application is already installed.</p>
+        <p><a href="login" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Login</a></p>
+        <p><small>Add ?force=1 to reinstall</small></p>
+    </div>
+    ');
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $result = performInstallation($_POST);
+    if ($result['success']) {
+        showSuccessPage($result);
+    } else {
+        showErrorPage($result['error']);
+    }
+    exit;
+}
+
+// Show installation form
+showInstallationForm();
+
+function performInstallation($data) {
+    try {
+        // Validate input
+        if (empty($data['db_host']) || empty($data['db_name']) || empty($data['db_user']) || 
+            empty($data['app_url']) || empty($data['admin_email']) || empty($data['admin_password'])) {
+            return ['success' => false, 'error' => 'All fields are required.'];
+        }
+
+        // Test database connection
+        $pdo = new PDO("mysql:host={$data['db_host']};dbname={$data['db_name']}", $data['db_user'], $data['db_pass']);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        // Create .env file
+        $env_content = generateEnvContent($data);
+        if (file_put_contents('.env', $env_content) === false) {
+            return ['success' => false, 'error' => 'Could not create .env file. Check file permissions.'];
+        }
+
+        // Generate app key
+        $app_key = 'base64:' . base64_encode(random_bytes(32));
+        $env_content = str_replace('APP_KEY=', 'APP_KEY=' . $app_key, $env_content);
+        file_put_contents('.env', $env_content);
+
+        // Run basic setup
+        setupBasicData($pdo, $data);
+
+        return ['success' => true, 'data' => $data];
+
+    } catch (PDOException $e) {
+        return ['success' => false, 'error' => 'Database connection failed: ' . $e->getMessage()];
+    } catch (Exception $e) {
+        return ['success' => false, 'error' => 'Installation failed: ' . $e->getMessage()];
+    }
+}
+
+function generateEnvContent($data) {
+    return "APP_NAME=\"Brayne Jewelry Manager\"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL={$data['app_url']}
+
+LOG_CHANNEL=stack
+LOG_DEPRECATIONS_CHANNEL=null
+LOG_LEVEL=error
+
+DB_CONNECTION=mysql
+DB_HOST={$data['db_host']}
+DB_PORT=3306
+DB_DATABASE={$data['db_name']}
+DB_USERNAME={$data['db_user']}
+DB_PASSWORD={$data['db_pass']}
+
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=public
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
+
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS=\"noreply@" . parse_url($data['app_url'], PHP_URL_HOST) . "\"
+MAIL_FROM_NAME=\"Brayne Jewelry Manager\"
+
+SESSION_SECURE_COOKIE=true
+PASSWORD_TIMEOUT=10800
+LOGIN_THROTTLE=6
+LOGIN_THROTTLE_DECAY=60";
+}
+
+function setupBasicData($pdo, $data) {
+    // Create users table if not exists
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            role ENUM('admin', 'distributor', 'factory') DEFAULT 'distributor',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    ");
+
+    // Create products table if not exists
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS products (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            price DECIMAL(10,2) NOT NULL,
+            sku VARCHAR(255) UNIQUE NOT NULL,
+            category VARCHAR(255) NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    ");
+
+    // Create admin user
+    $hashed_password = password_hash($data['admin_password'], PASSWORD_DEFAULT);
+    $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'admin')");
+    $stmt->execute(['Admin User', $data['admin_email'], $hashed_password]);
+
+    // Create default users
+    $default_users = [
+        ['John Distributor', 'distributor1@jewelry.com', 'password', 'distributor'],
+        ['Jane Distributor', 'distributor2@jewelry.com', 'password', 'distributor'],
+        ['Factory Manager', 'factory@jewelry.com', 'password', 'factory']
+    ];
+
+    foreach ($default_users as $user) {
+        $hashed = password_hash($user[2], PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$user[0], $user[1], $hashed, $user[3]]);
+    }
+
+    // Create sample products
+    $products = [
+        ['Diamond Ring', 2500.00, 'DR-001', 'Rings'],
+        ['Pearl Necklace', 800.00, 'PN-001', 'Necklaces'],
+        ['Sapphire Earrings', 1200.00, 'SE-001', 'Earrings'],
+        ['Gold Bracelet', 600.00, 'GB-001', 'Bracelets']
+    ];
+
+    foreach ($products as $product) {
+        $stmt = $pdo->prepare("INSERT INTO products (name, price, sku, category) VALUES (?, ?, ?, ?)");
+        $stmt->execute($product);
+    }
+}
+
+function showInstallationForm() {
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Brayne Jewelry Manager - Installer</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+            .installer-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        </style>
+    </head>
+    <body>
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="installer-card p-5">
+                        <div class="text-center mb-4">
+                            <h1><i class="fas fa-gem text-primary"></i> Brayne Jewelry Manager</h1>
+                            <h4 class="text-muted">Quick Installer</h4>
+                        </div>
+
+                        <form method="POST">
+                            <h5 class="mb-3">Database Configuration</h5>
+                            <div class="mb-3">
+                                <label for="db_host" class="form-label">Database Host</label>
+                                <input type="text" class="form-control" id="db_host" name="db_host" value="localhost" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="db_name" class="form-label">Database Name</label>
+                                <input type="text" class="form-control" id="db_name" name="db_name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="db_user" class="form-label">Database Username</label>
+                                <input type="text" class="form-control" id="db_user" name="db_user" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="db_pass" class="form-label">Database Password</label>
+                                <input type="password" class="form-control" id="db_pass" name="db_pass" required>
+                            </div>
+
+                            <h5 class="mb-3 mt-4">Application Configuration</h5>
+                            <div class="mb-3">
+                                <label for="app_url" class="form-label">Application URL</label>
+                                <input type="url" class="form-control" id="app_url" name="app_url" value="https://<?= $_SERVER['HTTP_HOST'] ?>" required>
+                                <div class="form-text">Include https:// and no trailing slash</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="admin_email" class="form-label">Admin Email</label>
+                                <input type="email" class="form-control" id="admin_email" name="admin_email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="admin_password" class="form-label">Admin Password</label>
+                                <input type="password" class="form-control" id="admin_password" name="admin_password" required>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-rocket"></i> Install Application
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+}
+
+function showSuccessPage($result) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Installation Complete - Brayne Jewelry Manager</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+            .success-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        </style>
+    </head>
+    <body>
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="success-card p-5 text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h2 class="text-success">Installation Complete!</h2>
+                        <p class="text-muted">Your Brayne Jewelry Manager has been successfully installed.</p>
+                        
+                        <div class="alert alert-info text-start">
+                            <h5><i class="fas fa-info-circle"></i> Login Credentials:</h5>
+                            <ul>
+                                <li><strong>Admin:</strong> <?= htmlspecialchars($result['data']['admin_email']) ?> / (password you set)</li>
+                                <li><strong>Distributor:</strong> distributor1@jewelry.com / password</li>
+                                <li><strong>Factory:</strong> factory@jewelry.com / password</li>
+                            </ul>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <a href="login" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-sign-in-alt"></i> Go to Login
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="/" class="btn btn-outline-primary btn-lg w-100">
+                                    <i class="fas fa-home"></i> Go to Homepage
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt"></i>
+                                For security, you should delete this install.php file after installation.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+}
+
+function showErrorPage($error) {
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Installation Error - Brayne Jewelry Manager</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+            .error-card { background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        </style>
+    </head>
+    <body>
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="error-card p-5 text-center">
+                        <div class="mb-4">
+                            <i class="fas fa-exclamation-triangle text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        <h2 class="text-danger">Installation Failed</h2>
+                        <p class="text-muted"><?= htmlspecialchars($error) ?></p>
+                        
+                        <a href="install.php" class="btn btn-primary btn-lg">
+                            <i class="fas fa-redo"></i> Try Again
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+}
+?> 
