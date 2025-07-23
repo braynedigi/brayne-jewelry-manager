@@ -35,7 +35,7 @@ function performInstallation($data) {
     try {
         // Validate input
         if (empty($data['db_host']) || empty($data['db_name']) || empty($data['db_user']) || 
-            empty($data['app_url']) || empty($data['admin_email']) || empty($data['admin_password'])) {
+            empty($data['app_url']) || empty($data['admin_email']) || empty($data['admin_password']) || empty($data['db_pass'])) {
             return ['success' => false, 'error' => 'All fields are required.'];
         }
 
@@ -54,7 +54,10 @@ function performInstallation($data) {
         $env_content = str_replace('APP_KEY=', 'APP_KEY=' . $app_key, $env_content);
         file_put_contents('.env', $env_content);
 
-        // Run basic setup
+        // Create complete database schema
+        createCompleteDatabaseSchema($pdo);
+
+        // Setup basic data
         setupBasicData($pdo, $data);
 
         return ['success' => true, 'data' => $data];
@@ -64,6 +67,175 @@ function performInstallation($data) {
     } catch (Exception $e) {
         return ['success' => false, 'error' => 'Installation failed: ' . $e->getMessage()];
     }
+}
+
+function createCompleteDatabaseSchema($pdo) {
+    // Drop existing tables if they exist
+    $pdo->exec("DROP TABLE IF EXISTS order_status_histories");
+    $pdo->exec("DROP TABLE IF EXISTS order_product");
+    $pdo->exec("DROP TABLE IF EXISTS orders");
+    $pdo->exec("DROP TABLE IF EXISTS products");
+    $pdo->exec("DROP TABLE IF EXISTS customers");
+    $pdo->exec("DROP TABLE IF EXISTS distributors");
+    $pdo->exec("DROP TABLE IF EXISTS couriers");
+    $pdo->exec("DROP TABLE IF EXISTS users");
+    $pdo->exec("DROP TABLE IF EXISTS settings");
+    $pdo->exec("DROP TABLE IF EXISTS notifications");
+
+    // Create users table
+    $pdo->exec("
+        CREATE TABLE users (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            role ENUM('admin', 'distributor', 'factory') DEFAULT 'distributor',
+            logo VARCHAR(255) NULL,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL
+        )
+    ");
+
+    // Create distributors table
+    $pdo->exec("
+        CREATE TABLE distributors (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT UNSIGNED NOT NULL,
+            company_name VARCHAR(255) NOT NULL,
+            phone VARCHAR(255) NULL,
+            street VARCHAR(255) NULL,
+            city VARCHAR(255) NULL,
+            province VARCHAR(255) NULL,
+            country VARCHAR(255) NULL,
+            is_international BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ");
+
+    // Create customers table
+    $pdo->exec("
+        CREATE TABLE customers (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            distributor_id BIGINT UNSIGNED NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NULL,
+            phone VARCHAR(255) NULL,
+            street VARCHAR(255) NULL,
+            city VARCHAR(255) NULL,
+            province VARCHAR(255) NULL,
+            country VARCHAR(255) NULL,
+            postal_code VARCHAR(255) NULL,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL,
+            FOREIGN KEY (distributor_id) REFERENCES distributors(id) ON DELETE CASCADE
+        )
+    ");
+
+    // Create products table
+    $pdo->exec("
+        CREATE TABLE products (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            description TEXT NULL,
+            price DECIMAL(10,2) NOT NULL,
+            sku VARCHAR(255) UNIQUE NOT NULL,
+            category VARCHAR(255) NOT NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            image VARCHAR(255) NULL,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL
+        )
+    ");
+
+    // Create couriers table
+    $pdo->exec("
+        CREATE TABLE couriers (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            phone VARCHAR(255) NULL,
+            email VARCHAR(255) NULL,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL
+        )
+    ");
+
+    // Create orders table
+    $pdo->exec("
+        CREATE TABLE orders (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            distributor_id BIGINT UNSIGNED NOT NULL,
+            customer_id BIGINT UNSIGNED NOT NULL,
+            order_number VARCHAR(255) UNIQUE NOT NULL,
+            status VARCHAR(255) DEFAULT 'pending',
+            payment_status ENUM('unpaid', 'partially_paid', 'fully_paid') DEFAULT 'unpaid',
+            total_amount DECIMAL(10,2) DEFAULT 0.00,
+            priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+            timeline_days INT DEFAULT 7,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL,
+            FOREIGN KEY (distributor_id) REFERENCES distributors(id) ON DELETE CASCADE,
+            FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+        )
+    ");
+
+    // Create order_product table
+    $pdo->exec("
+        CREATE TABLE order_product (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            order_id BIGINT UNSIGNED NOT NULL,
+            product_id BIGINT UNSIGNED NOT NULL,
+            quantity INT NOT NULL DEFAULT 1,
+            price DECIMAL(10,2) NOT NULL,
+            metal VARCHAR(255) NULL,
+            font VARCHAR(255) NULL,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL,
+            FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+            FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+        )
+    ");
+
+    // Create order_status_histories table
+    $pdo->exec("
+        CREATE TABLE order_status_histories (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            order_id BIGINT UNSIGNED NOT NULL,
+            status VARCHAR(255) NOT NULL,
+            notes TEXT NULL,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL,
+            FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+        )
+    ");
+
+    // Create settings table
+    $pdo->exec("
+        CREATE TABLE settings (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            key VARCHAR(255) UNIQUE NOT NULL,
+            value TEXT NULL,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL
+        )
+    ");
+
+    // Create notifications table
+    $pdo->exec("
+        CREATE TABLE notifications (
+            id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT UNSIGNED NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            message TEXT NOT NULL,
+            type VARCHAR(255) DEFAULT 'info',
+            is_read BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP NULL DEFAULT NULL,
+            updated_at TIMESTAMP NULL DEFAULT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    ");
 }
 
 function generateEnvContent($data) {
@@ -107,62 +279,64 @@ LOGIN_THROTTLE_DECAY=60";
 }
 
 function setupBasicData($pdo, $data) {
-    // Create users table if not exists
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            email VARCHAR(255) UNIQUE NOT NULL,
-            password VARCHAR(255) NOT NULL,
-            role ENUM('admin', 'distributor', 'factory') DEFAULT 'distributor',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
-    ");
-
-    // Create products table if not exists
-    $pdo->exec("
-        CREATE TABLE IF NOT EXISTS products (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            price DECIMAL(10,2) NOT NULL,
-            sku VARCHAR(255) UNIQUE NOT NULL,
-            category VARCHAR(255) NOT NULL,
-            is_active BOOLEAN DEFAULT TRUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
-    ");
-
     // Create admin user
     $hashed_password = password_hash($data['admin_password'], PASSWORD_DEFAULT);
     $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'admin')");
     $stmt->execute(['Admin User', $data['admin_email'], $hashed_password]);
 
-    // Create default users
-    $default_users = [
-        ['John Distributor', 'distributor1@jewelry.com', 'password', 'distributor'],
-        ['Jane Distributor', 'distributor2@jewelry.com', 'password', 'distributor'],
-        ['Factory Manager', 'factory@jewelry.com', 'password', 'factory']
-    ];
+    // Create distributor users
+    $distributor1_password = password_hash('password', PASSWORD_DEFAULT);
+    $distributor2_password = password_hash('password', PASSWORD_DEFAULT);
+    $factory_password = password_hash('password', PASSWORD_DEFAULT);
+    
+    $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'distributor')");
+    $stmt->execute(['John Distributor', 'distributor1@jewelry.com', $distributor1_password]);
+    $distributor1_id = $pdo->lastInsertId();
+    
+    $stmt->execute(['Jane Distributor', 'distributor2@jewelry.com', $distributor2_password]);
+    $distributor2_id = $pdo->lastInsertId();
+    
+    $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'factory')");
+    $stmt->execute(['Factory Manager', 'factory@jewelry.com', $factory_password]);
 
-    foreach ($default_users as $user) {
-        $hashed = password_hash($user[2], PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$user[0], $user[1], $hashed, $user[3]]);
-    }
+    // Create distributor profiles
+    $stmt = $pdo->prepare("INSERT INTO distributors (user_id, company_name, phone, street, city, province, country) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->execute([$distributor1_id, 'Golden Jewelers', '+1-555-0101', '123 Main Street', 'New York', 'NY', 'USA']);
+    $stmt->execute([$distributor2_id, 'Silver & Gold Co.', '+1-555-0202', '456 Oak Avenue', 'Los Angeles', 'CA', 'USA']);
 
     // Create sample products
     $products = [
-        ['Diamond Ring', 2500.00, 'DR-001', 'Rings'],
-        ['Pearl Necklace', 800.00, 'PN-001', 'Necklaces'],
-        ['Sapphire Earrings', 1200.00, 'SE-001', 'Earrings'],
-        ['Gold Bracelet', 600.00, 'GB-001', 'Bracelets']
+        ['Diamond Ring', 'Beautiful 18k gold diamond ring', 2500.00, 'DR-001', 'Rings'],
+        ['Pearl Necklace', 'Elegant freshwater pearl necklace', 800.00, 'PN-001', 'Necklaces'],
+        ['Sapphire Earrings', 'Stunning sapphire and diamond earrings', 1200.00, 'SE-001', 'Earrings'],
+        ['Gold Bracelet', 'Classic 14k gold bracelet', 600.00, 'GB-001', 'Bracelets']
     ];
 
+    $stmt = $pdo->prepare("INSERT INTO products (name, description, price, sku, category) VALUES (?, ?, ?, ?, ?)");
     foreach ($products as $product) {
-        $stmt = $pdo->prepare("INSERT INTO products (name, price, sku, category) VALUES (?, ?, ?, ?)");
         $stmt->execute($product);
+    }
+
+    // Create couriers
+    $stmt = $pdo->prepare("INSERT INTO couriers (name, phone, email) VALUES (?, ?, ?)");
+    $couriers = [
+        ['Express Delivery', '+1-555-0303', 'express@delivery.com'],
+        ['Fast Shipping Co.', '+1-555-0404', 'fast@shipping.com'],
+        ['Premium Logistics', '+1-555-0505', 'premium@logistics.com']
+    ];
+    foreach ($couriers as $courier) {
+        $stmt->execute($courier);
+    }
+
+    // Create sample customers
+    $stmt = $pdo->prepare("INSERT INTO customers (distributor_id, name, email, phone, street, city, province, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+    $customers = [
+        [$distributor1_id, 'Alice Johnson', 'alice@email.com', '+1-555-1001', '789 Pine St', 'New York', 'NY', 'USA'],
+        [$distributor1_id, 'Bob Smith', 'bob@email.com', '+1-555-1002', '321 Elm St', 'New York', 'NY', 'USA'],
+        [$distributor2_id, 'Carol Davis', 'carol@email.com', '+1-555-2001', '654 Maple Ave', 'Los Angeles', 'CA', 'USA']
+    ];
+    foreach ($customers as $customer) {
+        $stmt->execute($customer);
     }
 }
 
