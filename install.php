@@ -70,19 +70,21 @@ function performInstallation($data) {
 }
 
 function createCompleteDatabaseSchema($pdo) {
-    // Drop existing tables if they exist
+    // Disable foreign key checks temporarily
+    $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+    
+    // Drop existing tables if they exist (in reverse dependency order)
     $pdo->exec("DROP TABLE IF EXISTS order_status_histories");
     $pdo->exec("DROP TABLE IF EXISTS order_product");
     $pdo->exec("DROP TABLE IF EXISTS orders");
-    $pdo->exec("DROP TABLE IF EXISTS products");
     $pdo->exec("DROP TABLE IF EXISTS customers");
     $pdo->exec("DROP TABLE IF EXISTS distributors");
-    $pdo->exec("DROP TABLE IF EXISTS couriers");
+    $pdo->exec("DROP TABLE IF EXISTS notifications");
+    $pdo->exec("DROP TABLE IF EXISTS products");
     $pdo->exec("DROP TABLE IF EXISTS users");
     $pdo->exec("DROP TABLE IF EXISTS settings");
-    $pdo->exec("DROP TABLE IF EXISTS notifications");
 
-    // Create users table
+    // Create users table first (no dependencies)
     $pdo->exec("
         CREATE TABLE users (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -96,7 +98,7 @@ function createCompleteDatabaseSchema($pdo) {
         )
     ");
 
-    // Create distributors table
+    // Create distributors table (depends on users)
     $pdo->exec("
         CREATE TABLE distributors (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -114,7 +116,7 @@ function createCompleteDatabaseSchema($pdo) {
         )
     ");
 
-    // Create customers table
+    // Create customers table (depends on distributors)
     $pdo->exec("
         CREATE TABLE customers (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -133,7 +135,7 @@ function createCompleteDatabaseSchema($pdo) {
         )
     ");
 
-    // Create products table
+    // Create products table (no dependencies)
     $pdo->exec("
         CREATE TABLE products (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -149,7 +151,7 @@ function createCompleteDatabaseSchema($pdo) {
         )
     ");
 
-    // Create couriers table
+    // Create couriers table (no dependencies)
     $pdo->exec("
         CREATE TABLE couriers (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -162,7 +164,7 @@ function createCompleteDatabaseSchema($pdo) {
         )
     ");
 
-    // Create orders table
+    // Create orders table (depends on distributors and customers)
     $pdo->exec("
         CREATE TABLE orders (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -181,7 +183,7 @@ function createCompleteDatabaseSchema($pdo) {
         )
     ");
 
-    // Create order_product table
+    // Create order_product table (depends on orders and products)
     $pdo->exec("
         CREATE TABLE order_product (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -198,7 +200,7 @@ function createCompleteDatabaseSchema($pdo) {
         )
     ");
 
-    // Create order_status_histories table
+    // Create order_status_histories table (depends on orders)
     $pdo->exec("
         CREATE TABLE order_status_histories (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -211,18 +213,18 @@ function createCompleteDatabaseSchema($pdo) {
         )
     ");
 
-    // Create settings table
+    // Create settings table (no dependencies)
     $pdo->exec("
         CREATE TABLE settings (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            key VARCHAR(255) UNIQUE NOT NULL,
+            `key` VARCHAR(255) UNIQUE NOT NULL,
             value TEXT NULL,
             created_at TIMESTAMP NULL DEFAULT NULL,
             updated_at TIMESTAMP NULL DEFAULT NULL
         )
     ");
 
-    // Create notifications table
+    // Create notifications table (depends on users)
     $pdo->exec("
         CREATE TABLE notifications (
             id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -236,6 +238,9 @@ function createCompleteDatabaseSchema($pdo) {
             FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         )
     ");
+
+    // Re-enable foreign key checks
+    $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
 }
 
 function generateEnvContent($data) {
