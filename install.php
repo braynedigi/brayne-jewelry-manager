@@ -505,15 +505,24 @@ function showSuccessPage($result) {
                             </ul>
                         </div>
 
+                        <div class="alert alert-warning text-start">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Important Next Steps:</h5>
+                            <ol>
+                                <li><strong>Run Post-Installation Setup:</strong> Visit <code><?= htmlspecialchars($result['data']['app_url']) ?>/post-install.php</code></li>
+                                <li><strong>Delete Install Files:</strong> Remove <code>install.php</code> and <code>post-install.php</code> for security</li>
+                                <li><strong>Test Login:</strong> Try logging in with your admin credentials</li>
+                            </ol>
+                        </div>
+
                         <div class="row mt-4">
                             <div class="col-md-6">
-                                <a href="login" class="btn btn-primary btn-lg w-100">
-                                    <i class="fas fa-sign-in-alt"></i> Go to Login
+                                <a href="post-install.php" class="btn btn-warning btn-lg w-100">
+                                    <i class="fas fa-cog"></i> Run Post-Install Setup
                                 </a>
                             </div>
                             <div class="col-md-6">
-                                <a href="/" class="btn btn-outline-primary btn-lg w-100">
-                                    <i class="fas fa-home"></i> Go to Homepage
+                                <a href="login" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-sign-in-alt"></i> Go to Login
                                 </a>
                             </div>
                         </div>
