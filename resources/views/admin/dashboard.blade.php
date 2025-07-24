@@ -251,7 +251,7 @@ use App\Models\Order;
                                             {{ $order->getOrderStatusLabel() }}
                                         </span>
                                     </td>
-                                    <td>{{ $order->created_at->format('M d') }}</td>
+                                    <td>{{ $order->created_at ? $order->created_at->format('M d') : 'N/A' }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
@@ -307,7 +307,7 @@ use App\Models\Order;
                                             {{ $product->is_active ? 'Active' : 'Inactive' }}
                                         </span>
                                     </td>
-                                    <td>{{ $product->created_at->format('M d') }}</td>
+                                    <td>{{ $product->created_at ? $product->created_at->format('M d') : 'N/A' }}</td>
                                 </tr>
                                 @endforeach
                             </tbody>
