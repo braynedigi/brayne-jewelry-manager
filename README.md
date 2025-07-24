@@ -220,7 +220,7 @@ This project is open-sourced software licensed under the [MIT license](https://o
 
 For support and questions:
 - Create an issue on GitHub
-- Email: support@braynejewelry.com
+- Email: support@braynedigital.com
 - Documentation: [Wiki](https://github.com/yourusername/jewelry-manager/wiki)
 
 ## 🔄 Changelog

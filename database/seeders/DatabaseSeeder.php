@@ -70,36 +70,108 @@ class DatabaseSeeder extends Seeder
             'is_international' => false,
         ]);
 
-        // Create products
+        // Create products with proper pricing structure
         Product::create([
             'name' => 'Diamond Ring',
-            'price' => 2500.00,
             'sku' => 'DR-001',
             'category' => 'Rings',
+            'local_pricing' => [
+                'Stainless' => 2500.00,
+                'Brass Gold' => 2800.00,
+                '925 Pure Sterling Silver' => 3200.00,
+                '10K Real Gold' => 4500.00,
+                '14K Real Gold' => 5800.00,
+                '18K Real Gold' => 7200.00,
+            ],
+            'international_pricing' => [
+                'Stainless' => 50.00,
+                'Brass Gold' => 56.00,
+                '925 Pure Sterling Silver' => 64.00,
+                '10K Real Gold' => 90.00,
+                '14K Real Gold' => 116.00,
+                '18K Real Gold' => 144.00,
+            ],
+            'metals' => ['Stainless', 'Brass Gold', '925 Pure Sterling Silver', '10K Real Gold', '14K Real Gold', '18K Real Gold'],
+            'fonts' => ['Arial', 'Times New Roman', 'Helvetica'],
+            'font_requirement' => 1,
             'is_active' => true,
         ]);
 
         Product::create([
             'name' => 'Pearl Necklace',
-            'price' => 800.00,
             'sku' => 'PN-001',
             'category' => 'Necklaces',
+            'local_pricing' => [
+                'Stainless' => 800.00,
+                'Brass Gold' => 900.00,
+                '925 Pure Sterling Silver' => 1100.00,
+                '10K Real Gold' => 1500.00,
+                '14K Real Gold' => 1900.00,
+                '18K Real Gold' => 2400.00,
+            ],
+            'international_pricing' => [
+                'Stainless' => 16.00,
+                'Brass Gold' => 18.00,
+                '925 Pure Sterling Silver' => 22.00,
+                '10K Real Gold' => 30.00,
+                '14K Real Gold' => 38.00,
+                '18K Real Gold' => 48.00,
+            ],
+            'metals' => ['Stainless', 'Brass Gold', '925 Pure Sterling Silver', '10K Real Gold', '14K Real Gold', '18K Real Gold'],
+            'fonts' => [],
+            'font_requirement' => 0,
             'is_active' => true,
         ]);
 
         Product::create([
             'name' => 'Sapphire Earrings',
-            'price' => 1200.00,
             'sku' => 'SE-001',
             'category' => 'Earrings',
+            'local_pricing' => [
+                'Stainless' => 1200.00,
+                'Brass Gold' => 1350.00,
+                '925 Pure Sterling Silver' => 1600.00,
+                '10K Real Gold' => 2200.00,
+                '14K Real Gold' => 2800.00,
+                '18K Real Gold' => 3500.00,
+            ],
+            'international_pricing' => [
+                'Stainless' => 24.00,
+                'Brass Gold' => 27.00,
+                '925 Pure Sterling Silver' => 32.00,
+                '10K Real Gold' => 44.00,
+                '14K Real Gold' => 56.00,
+                '18K Real Gold' => 70.00,
+            ],
+            'metals' => ['Stainless', 'Brass Gold', '925 Pure Sterling Silver', '10K Real Gold', '14K Real Gold', '18K Real Gold'],
+            'fonts' => [],
+            'font_requirement' => 0,
             'is_active' => true,
         ]);
 
         Product::create([
             'name' => 'Gold Bracelet',
-            'price' => 600.00,
             'sku' => 'GB-001',
             'category' => 'Bracelets',
+            'local_pricing' => [
+                'Stainless' => 600.00,
+                'Brass Gold' => 680.00,
+                '925 Pure Sterling Silver' => 800.00,
+                '10K Real Gold' => 1100.00,
+                '14K Real Gold' => 1400.00,
+                '18K Real Gold' => 1800.00,
+            ],
+            'international_pricing' => [
+                'Stainless' => 12.00,
+                'Brass Gold' => 13.60,
+                '925 Pure Sterling Silver' => 16.00,
+                '10K Real Gold' => 22.00,
+                '14K Real Gold' => 28.00,
+                '18K Real Gold' => 36.00,
+            ],
+            'metals' => ['Stainless', 'Brass Gold', '925 Pure Sterling Silver', '10K Real Gold', '14K Real Gold', '18K Real Gold'],
+            'fonts' => ['Arial', 'Times New Roman'],
+            'font_requirement' => 1,
             'is_active' => true,
         ]);
 
