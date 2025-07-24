@@ -26,7 +26,7 @@ class OrderController extends Controller
 
         // Apply role-based filtering
         if ($user->isDistributor()) {
-            $query->where('distributor_id', $user->distributor_id);
+            $query->where('distributor_id', $user->distributor->id);
         }
 
         // Advanced search and filtering

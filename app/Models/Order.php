@@ -190,6 +190,22 @@ class Order extends Model
     }
 
     /**
+     * Get status color (alias for getOrderStatusColor)
+     */
+    public function getStatusColor(): string
+    {
+        return $this->getOrderStatusColor();
+    }
+
+    /**
+     * Get status label (alias for getOrderStatusLabel)
+     */
+    public function getStatusLabel(): string
+    {
+        return $this->getOrderStatusLabel();
+    }
+
+    /**
      * Get available statuses for admin
      */
     public static function getAdminStatuses(): array
