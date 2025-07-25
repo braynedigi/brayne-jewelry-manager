@@ -13,8 +13,9 @@ class SettingsController extends Controller
         $appearanceSettings = Setting::getByGroup('appearance');
         $notificationSettings = Setting::getByGroup('notifications');
         $generalSettings = Setting::getByGroup('general');
+        $emailSettings = Setting::getByGroup('email');
 
-        return view('admin.settings.index', compact('appearanceSettings', 'notificationSettings', 'generalSettings'));
+        return view('admin.settings.index', compact('appearanceSettings', 'notificationSettings', 'generalSettings', 'emailSettings'));
     }
 
     public function update(Request $request)
@@ -77,12 +78,42 @@ class SettingsController extends Controller
 
         // Send test email
         try {
-            // This would integrate with your email service
-            // For now, we'll just return success
+            // Update mail configuration from settings
+            $this->updateMailConfig();
+            
+            // Send test email
+            \Mail::to($request->email)->send(new \App\Mail\GeneralNotification(
+                'Test Email - Jewelry Manager',
+                'This is a test email to verify your email configuration is working correctly.',
+                'info'
+            ));
+            
             return response()->json(['success' => true, 'message' => 'Test email sent successfully!']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to send test email: ' . $e->getMessage()]);
         }
+    }
+
+    /**
+     * Update mail configuration from settings
+     */
+    private function updateMailConfig()
+    {
+        $mailConfig = [
+            'driver' => Setting::getValue('mail_mailer', 'smtp'),
+            'host' => Setting::getValue('mail_host', 'smtp.gmail.com'),
+            'port' => Setting::getValue('mail_port', '587'),
+            'username' => Setting::getValue('mail_username', ''),
+            'password' => Setting::getValue('mail_password', ''),
+            'encryption' => Setting::getValue('mail_encryption', 'tls'),
+            'from' => [
+                'address' => Setting::getValue('mail_from_address', 'noreply@jewelrymanager.com'),
+                'name' => Setting::getValue('mail_from_name', 'Jewelry Manager'),
+            ],
+        ];
+
+        config(['mail.mailers.smtp' => $mailConfig]);
+        config(['mail.from' => $mailConfig['from']]);
     }
 
     public function refresh()

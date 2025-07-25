@@ -1,4 +1,4 @@
-# Laravel Root .htaccess for cPanel Subdirectory Deployment
+# Laravel Root .htaccess for Docker Deployment
 # This file should be placed in the root of your Laravel application
 
 <IfModule mod_rewrite.c>

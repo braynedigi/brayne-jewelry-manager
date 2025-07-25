@@ -6,6 +6,8 @@ use App\Models\Notification;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use App\Models\EmailTemplate;
+use App\Mail\DynamicEmail;
 
 class NotificationService
 {
@@ -59,16 +61,125 @@ class NotificationService
     {
         try {
             $user = $notification->user;
-            
-            // This would integrate with your email service
-            // For now, we'll just mark it as sent
+            self::updateMailConfig();
+
+            // Try to use a database-driven template
+            $template = EmailTemplate::getByType($notification->type);
+            $data = $notification->data ?? [];
+            $data['title'] = $notification->title;
+            $data['message'] = $notification->message;
+            $data['user_name'] = $user->name ?? '';
+            $data['system_name'] = config('app.name', 'Jewelry Manager');
+
+            // Add order-specific data if available
+            if (isset($data['order_id'])) {
+                $order = \App\Models\Order::with(['customer', 'distributor.user', 'orderItems.product'])->find($data['order_id']);
+                if ($order) {
+                    $data['order_number'] = $order->order_number;
+                    $data['customer_name'] = $order->customer->name ?? '';
+                    $data['customer_email'] = $order->customer->email ?? '';
+                    $data['customer_phone'] = $order->customer->phone ?? '';
+                    $data['customer_address'] = $order->customer->address ?? '';
+                    $data['distributor_name'] = $order->distributor->user->name ?? '';
+                    $data['status'] = $order->order_status;
+                    $data['priority'] = $order->priority;
+                    $data['total_amount'] = number_format($order->total_amount, 2);
+                    $data['estimated_delivery'] = $order->estimated_delivery ? $order->estimated_delivery->format('M d, Y') : 'Not set';
+                    
+                    // Add products data
+                    $data['products'] = $order->orderItems->map(function($item) {
+                        return [
+                            'name' => $item->product->name ?? '',
+                            'quantity' => $item->quantity,
+                            'price' => number_format($item->price, 2)
+                        ];
+                    })->toArray();
+                }
+            }
+
+            // Add customer-specific data if available
+            if (isset($data['customer_id'])) {
+                $customer = \App\Models\Customer::with('distributor.user')->find($data['customer_id']);
+                if ($customer) {
+                    $data['customer_name'] = $customer->name ?? '';
+                    $data['customer_email'] = $customer->email ?? '';
+                    $data['customer_phone'] = $customer->phone ?? '';
+                    $data['customer_address'] = $customer->address ?? '';
+                    $data['distributor_name'] = $customer->distributor->user->name ?? '';
+                }
+            }
+
+            // Add product-specific data if available
+            if (isset($data['product_id'])) {
+                $product = \App\Models\Product::with('category', 'subcategory')->find($data['product_id']);
+                if ($product) {
+                    $data['product_name'] = $product->name ?? '';
+                    $data['product_category'] = $product->category->name ?? '';
+                    $data['product_subcategory'] = $product->subcategory->name ?? '';
+                    $data['product_description'] = $product->description ?? '';
+                    $data['product_price'] = number_format($product->base_price, 2);
+                }
+            }
+
+            if ($template) {
+                $rendered = $template->render($data);
+                Mail::to($user->email)->send(new DynamicEmail($rendered['subject'], $rendered['content']));
+            } else {
+                // Fallback to old mailables for now
+                switch ($notification->type) {
+                    case 'order_status_updated':
+                        $order = \App\Models\Order::find($notification->data['order_id'] ?? null);
+                        if ($order) {
+                            $oldStatus = $notification->data['old_status'] ?? 'unknown';
+                            $newStatus = $notification->data['new_status'] ?? 'unknown';
+                            Mail::to($user->email)->send(new \App\Mail\OrderStatusNotification($order, $oldStatus, $newStatus, $notification->message));
+                        }
+                        break;
+                    case 'order_created':
+                        $order = \App\Models\Order::find($notification->data['order_id'] ?? null);
+                        if ($order) {
+                            Mail::to($user->email)->send(new \App\Mail\OrderCreatedNotification($order));
+                        }
+                        break;
+                    default:
+                        Mail::to($user->email)->send(new \App\Mail\GeneralNotification(
+                            $notification->title,
+                            $notification->message,
+                            'info',
+                            $notification->data ?? []
+                        ));
+                        break;
+                }
+            }
+
             $notification->markEmailAsSent();
-            
             return true;
         } catch (\Exception $e) {
             \Log::error('Failed to send email notification: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Update mail configuration from settings
+     */
+    private static function updateMailConfig()
+    {
+        $mailConfig = [
+            'driver' => Setting::getValue('mail_mailer', 'smtp'),
+            'host' => Setting::getValue('mail_host', 'smtp.gmail.com'),
+            'port' => Setting::getValue('mail_port', '587'),
+            'username' => Setting::getValue('mail_username', ''),
+            'password' => Setting::getValue('mail_password', ''),
+            'encryption' => Setting::getValue('mail_encryption', 'tls'),
+            'from' => [
+                'address' => Setting::getValue('mail_from_address', 'noreply@jewelrymanager.com'),
+                'name' => Setting::getValue('mail_from_name', 'Jewelry Manager'),
+            ],
+        ];
+
+        config(['mail.mailers.smtp' => $mailConfig]);
+        config(['mail.from' => $mailConfig['from']]);
     }
 
     /**

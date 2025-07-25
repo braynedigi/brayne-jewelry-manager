@@ -28,6 +28,12 @@ use App\Models\Setting;
                     <button type="button" class="tab-button" onclick="switchTab('couriers')">
                         <i class="fas fa-truck me-2"></i>Couriers
                     </button>
+                    <button type="button" class="tab-button" onclick="switchTab('email')">
+                        <i class="fas fa-envelope me-2"></i>Email
+                    </button>
+                    <button type="button" class="tab-button" onclick="switchTab('email-templates')">
+                        <i class="fas fa-file-alt me-2"></i>Email Templates
+                    </button>
                 </div>
                 
                 <style>
@@ -289,6 +295,193 @@ use App\Models\Setting;
                         </div>
                     </div>
 
+                    <div class="tab-section" id="email">
+                        <h5 class="mb-4">
+                            <i class="fas fa-envelope me-2"></i>Email Configuration
+                        </h5>
+                        
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Email Setup Guide:</strong> Configure your email settings to enable email notifications. 
+                            For Gmail, use SMTP with port 587 and TLS encryption. You may need to enable "Less secure app access" 
+                            or use an App Password.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="mail_mailer" class="form-label">Mail Driver</label>
+                                <select class="form-select" id="mail_mailer" name="settings[mail_mailer]">
+                                    <option value="smtp" {{ Setting::getValue('mail_mailer', 'smtp') === 'smtp' ? 'selected' : '' }}>SMTP</option>
+                                    <option value="sendmail" {{ Setting::getValue('mail_mailer', 'smtp') === 'sendmail' ? 'selected' : '' }}>Sendmail</option>
+                                    <option value="mailgun" {{ Setting::getValue('mail_mailer', 'smtp') === 'mailgun' ? 'selected' : '' }}>Mailgun</option>
+                                    <option value="ses" {{ Setting::getValue('mail_mailer', 'smtp') === 'ses' ? 'selected' : '' }}>Amazon SES</option>
+                                    <option value="postmark" {{ Setting::getValue('mail_mailer', 'smtp') === 'postmark' ? 'selected' : '' }}>Postmark</option>
+                                    <option value="resend" {{ Setting::getValue('mail_mailer', 'smtp') === 'resend' ? 'selected' : '' }}>Resend</option>
+                                    <option value="log" {{ Setting::getValue('mail_mailer', 'smtp') === 'log' ? 'selected' : '' }}>Log (for testing)</option>
+                                </select>
+                                <div class="form-text">The mail driver to use for sending emails</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="mail_host" class="form-label">SMTP Host</label>
+                                <input type="text" class="form-control" id="mail_host" 
+                                       name="settings[mail_host]" 
+                                       value="{{ Setting::getValue('mail_host', 'smtp.gmail.com') }}">
+                                <div class="form-text">SMTP server hostname (e.g., smtp.gmail.com)</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="mail_port" class="form-label">SMTP Port</label>
+                                <input type="text" class="form-control" id="mail_port" 
+                                       name="settings[mail_port]" 
+                                       value="{{ Setting::getValue('mail_port', '587') }}">
+                                <div class="form-text">SMTP port number (587 for TLS, 465 for SSL)</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="mail_username" class="form-label">SMTP Username</label>
+                                <input type="text" class="form-control" id="mail_username" 
+                                       name="settings[mail_username]" 
+                                       value="{{ Setting::getValue('mail_username', '') }}">
+                                <div class="form-text">Your email address or SMTP username</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="mail_password" class="form-label">SMTP Password</label>
+                                <input type="password" class="form-control" id="mail_password" 
+                                       name="settings[mail_password]" 
+                                       value="{{ Setting::getValue('mail_password', '') }}">
+                                <div class="form-text">Your email password or app password</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="mail_encryption" class="form-label">SMTP Encryption</label>
+                                <select class="form-select" id="mail_encryption" name="settings[mail_encryption]">
+                                    <option value="tls" {{ Setting::getValue('mail_encryption', 'tls') === 'tls' ? 'selected' : '' }}>TLS</option>
+                                    <option value="ssl" {{ Setting::getValue('mail_encryption', 'tls') === 'ssl' ? 'selected' : '' }}>SSL</option>
+                                    <option value="" {{ Setting::getValue('mail_encryption', 'tls') === '' ? 'selected' : '' }}>None</option>
+                                </select>
+                                <div class="form-text">Encryption type for SMTP connection</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="mail_from_address" class="form-label">From Email Address</label>
+                                <input type="email" class="form-control" id="mail_from_address" 
+                                       name="settings[mail_from_address]" 
+                                       value="{{ Setting::getValue('mail_from_address', 'noreply@jewelrymanager.com') }}">
+                                <div class="form-text">Email address that notifications will be sent from</div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-4">
+                                <label for="mail_from_name" class="form-label">From Name</label>
+                                <input type="text" class="form-control" id="mail_from_name" 
+                                       name="settings[mail_from_name]" 
+                                       value="{{ Setting::getValue('mail_from_name', 'Jewelry Manager') }}">
+                                <div class="form-text">Name that will appear as the sender</div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">Test Email Configuration</h6>
+                                <p class="text-muted mb-0">Send a test email to verify your configuration</p>
+                            </div>
+                            <button type="button" class="btn btn-outline-primary" onclick="testEmail()">
+                                <i class="fas fa-paper-plane me-2"></i>Send Test Email
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="tab-section" id="email-templates">
+                        <h5 class="mb-4">
+                            <i class="fas fa-file-alt me-2"></i>Email Template Management
+                        </h5>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h6 class="mb-1">Manage Email Templates</h6>
+                                <p class="text-muted mb-0">Create and customize email templates for system notifications</p>
+                            </div>
+                            <a href="{{ route('email-templates.create') }}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create Template
+                            </a>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Template Name</th>
+                                        <th>Type</th>
+                                        <th>Subject</th>
+                                        <th>Status</th>
+                                        <th>Last Updated</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse(\App\Models\EmailTemplate::latest()->get() as $template)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">{{ $template->name }}</div>
+                                            @if($template->description)
+                                                <small class="text-muted">{{ $template->description }}</small>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ ucwords(str_replace('_', ' ', $template->type)) }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="text-truncate" style="max-width: 200px;" title="{{ $template->subject }}">
+                                                {{ $template->subject }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ $template->is_active ? 'success' : 'secondary' }}">
+                                                {{ $template->is_active ? 'Active' : 'Inactive' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ $template->updated_at->format('M d, Y g:i A') }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('email-templates.show', $template) }}" 
+                                                   class="btn btn-sm btn-outline-primary" title="View">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{{ route('email-templates.edit', $template) }}" 
+                                                   class="btn btn-sm btn-outline-warning" title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-info" 
+                                                        onclick="previewTemplate({{ $template->id }})" title="Preview">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-success" 
+                                                        onclick="testTemplate({{ $template->id }})" title="Test">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="deleteEmailTemplate({{ $template->id }}, '{{ $template->name }}')" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <i class="fas fa-envelope fa-2x text-muted mb-2"></i>
+                                            <p class="text-muted mb-0">No email templates found. Create your first template to get started.</p>
+                                        </td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-between mt-4">
                         <a href="{{ route('admin.settings.refresh') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-sync-alt me-2"></i>Refresh Cache
@@ -348,7 +541,49 @@ document.addEventListener('DOMContentLoaded', function() {
     switchTab('appearance');
     
     // Log all available tabs for debugging
-    console.log('Available tabs: appearance, notifications, general, couriers');
+    console.log('Available tabs: appearance, notifications, general, email, couriers');
+    
+    // Test email function
+    window.testEmail = function() {
+        const email = prompt('Enter email address to send test email:');
+        if (!email) return;
+        
+        if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+        
+        // Show loading state
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        button.disabled = true;
+        
+        fetch('{{ route("admin.settings.test-email") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Test email sent successfully! Check your inbox.');
+            } else {
+                alert('Failed to send test email: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error sending test email: ' + error.message);
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
     });
 </script>
 
@@ -479,6 +714,68 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
 </div>
 
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-eye me-2"></i>Template Preview
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Subject:</label>
+                    <div id="previewSubject" class="p-2 bg-light rounded"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Content:</label>
+                    <div id="previewContent" class="p-3 bg-light rounded" style="max-height: 400px; overflow-y: auto;"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sample Data Used:</label>
+                    <div id="previewData" class="p-2 bg-light rounded">
+                        <pre class="mb-0" style="font-size: 12px;"></pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Modal -->
+<div class="modal fade" id="testModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-paper-plane me-2"></i>Test Email Template
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="testForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="testEmail" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="testEmail" name="email" required>
+                        <div class="form-text">Enter the email address where you want to send the test email.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Send Test Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 // Courier management functions
 function editCourier(id, name, phone, email, isActive) {
@@ -571,5 +868,85 @@ document.getElementById('deleteCourierForm').addEventListener('submit', function
         alert('An error occurred while deleting the courier.');
     });
 });
+
+// Email template functions
+function previewTemplate(templateId) {
+    fetch(`/email-templates/${templateId}/preview`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('previewSubject').textContent = data.subject;
+            document.getElementById('previewContent').innerHTML = data.content;
+            document.querySelector('#previewData pre').textContent = JSON.stringify(data.sample_data, null, 2);
+            
+            new bootstrap.Modal(document.getElementById('previewModal')).show();
+        })
+        .catch(error => {
+            alert('Error loading preview: ' + error.message);
+        });
+}
+
+function testTemplate(templateId) {
+    document.getElementById('testForm').onsubmit = function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('testEmail').value;
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+        submitBtn.disabled = true;
+        
+        fetch(`/email-templates/${templateId}/test`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Test email sent successfully! Check your inbox.');
+                bootstrap.Modal.getInstance(document.getElementById('testModal')).hide();
+            } else {
+                alert('Failed to send test email: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error sending test email: ' + error.message);
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    };
+    
+    new bootstrap.Modal(document.getElementById('testModal')).show();
+}
+
+// Email template deletion function
+function deleteEmailTemplate(templateId, templateName) {
+    if (confirm('Are you sure you want to delete the template "' + templateName + '"?')) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/email-templates/${templateId}`;
+        
+        const csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        
+        const methodField = document.createElement('input');
+        methodField.type = 'hidden';
+        methodField.name = '_method';
+        methodField.value = 'DELETE';
+        
+        form.appendChild(csrfToken);
+        form.appendChild(methodField);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
 </script>
 @endpush 

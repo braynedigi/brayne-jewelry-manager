@@ -107,8 +107,10 @@ class Notification extends Model
      */
     public function sendEmail()
     {
-        // This would integrate with your email service
-        // For now, we'll just mark it as sent
-        $this->markEmailAsSent();
+        try {
+            \App\Services\NotificationService::sendEmailNotification($this);
+        } catch (\Exception $e) {
+            \Log::error('Failed to send email for notification ' . $this->id . ': ' . $e->getMessage());
+        }
     }
 }

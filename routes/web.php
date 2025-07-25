@@ -157,6 +157,11 @@ Route::get('/debug/product/{sku}', function($sku) {
     Route::post('/couriers', [SettingsController::class, 'storeCourier'])->name('admin.couriers.store');
     Route::put('/couriers/{courier}', [SettingsController::class, 'updateCourier'])->name('admin.couriers.update');
     Route::delete('/couriers/{courier}', [SettingsController::class, 'destroyCourier'])->name('admin.couriers.destroy');
+    
+    // Admin email template management routes
+    Route::resource('email-templates', \App\Http\Controllers\EmailTemplateController::class);
+    Route::post('/email-templates/{template}/preview', [\App\Http\Controllers\EmailTemplateController::class, 'preview'])->name('email-templates.preview');
+    Route::post('/email-templates/{template}/test', [\App\Http\Controllers\EmailTemplateController::class, 'test'])->name('email-templates.test');
         
         // Order approval routes
         Route::get('/approval', [ApprovalController::class, 'index'])->name('admin.approval.index');
@@ -253,3 +258,30 @@ Route::get('/api/notifications/count', function () {
     $count = \App\Services\NotificationService::getUnreadCount(auth()->id());
     return response()->json(['count' => $count]);
 })->name('api.notifications.count');
+
+// Test route for email templates (admin only)
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/test-email-template', function () {
+        $user = auth()->user();
+        $order = \App\Models\Order::first();
+        
+        if ($order) {
+            \App\Services\NotificationService::sendToUser(
+                $user->id,
+                'order_status_updated',
+                'Test Email Template',
+                'This is a test of the new email template system',
+                [
+                    'order_id' => $order->id,
+                    'old_status' => 'pending',
+                    'new_status' => 'approved',
+                    'notes' => 'Test notes for the email template'
+                ]
+            );
+            
+            return response()->json(['success' => true, 'message' => 'Test email sent!']);
+        }
+        
+        return response()->json(['success' => false, 'message' => 'No orders found for testing']);
+    })->name('test.email-template');
+});

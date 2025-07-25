@@ -1,73 +1,27 @@
 # 🚀 Deployment Guide - Brayne Jewelry Manager
 
-This guide will help you deploy your Brayne Jewelry Manager to cPanel or any shared hosting environment.
+This guide will help you deploy your Brayne Jewelry Manager using Docker.
 
 ## 📋 Prerequisites
 
-### cPanel Requirements
-- **PHP 8.2 or higher**
-- **MySQL 5.7 or higher** (or MariaDB 10.2+)
-- **Composer** (if available)
-- **File Manager** access
-- **Database Manager** access
+### Docker Requirements
+- **Docker Desktop** installed and running
+- **Docker Compose** (included with Docker Desktop)
+- **Git** (for version control)
 
 ### Domain Setup
-- **Domain name** pointing to your hosting
+- **Domain name** pointing to your server
 - **SSL certificate** (recommended for production)
 
-## 🏗️ cPanel Deployment Steps
+## 🐳 Docker Deployment Steps
 
 ### Step 1: Database Setup
 
-1. **Login to cPanel**
-2. **Go to "MySQL Databases"**
-3. **Create a new database:**
-   - Database name: `brayne_jewelry` (or your preferred name)
-   - Note down the full database name (usually includes your username)
-4. **Create a database user:**
-   - Username: `jewelry_user` (or your preferred name)
-   - Strong password (save this!)
-5. **Add user to database:**
-   - Select your database and user
-   - Grant "ALL PRIVILEGES"
+The database will be automatically created when you run Docker containers. No manual setup required.
 
-### Step 2: File Upload
+### Step 2: Environment Configuration
 
-#### Option A: Using File Manager
-1. **Go to "File Manager" in cPanel**
-2. **Navigate to `public_html`** (or your domain's root directory)
-3. **Create a new folder** called `jewelry-manager`
-4. **Upload all project files** to this folder
-5. **Extract if uploaded as ZIP**
-
-#### Option B: Using FTP/SFTP
-1. **Use FileZilla or similar FTP client**
-2. **Connect to your hosting server**
-3. **Upload all files** to `public_html/jewelry-manager/`
-
-### Step 3: File Structure Setup
-
-After upload, your structure should be:
-```
-public_html/
-└── jewelry-manager/
-    ├── app/
-    ├── bootstrap/
-    ├── config/
-    ├── database/
-    ├── public/
-    ├── resources/
-    ├── routes/
-    ├── storage/
-    ├── vendor/
-    ├── .env
-    ├── artisan
-    └── composer.json
-```
-
-### Step 4: Environment Configuration
-
-1. **Rename `.env.example` to `.env`**
+1. **Copy `.env.example` to `.env`**
 2. **Edit `.env` file** with your production settings:
 
 ```env
@@ -75,14 +29,14 @@ APP_NAME="Brayne Jewelry Manager"
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
-APP_URL=https://yourdomain.com/jewelry-manager
+APP_URL=https://yourdomain.com
 
 DB_CONNECTION=mysql
-DB_HOST=localhost
+DB_HOST=mysql
 DB_PORT=3306
-DB_DATABASE=your_cpanel_username_brayne_jewelry
-DB_USERNAME=your_cpanel_username_jewelry_user
-DB_PASSWORD=your_database_password
+DB_DATABASE=jewelry_new
+DB_USERNAME=sail
+DB_PASSWORD=password
 
 BROADCAST_DRIVER=log
 CACHE_DRIVER=file
@@ -98,155 +52,184 @@ MAIL_USERNAME=your_email@domain.com
 MAIL_PASSWORD=your_email_password
 MAIL_ENCRYPTION=tls
 MAIL_FROM_ADDRESS="noreply@yourdomain.com"
-MAIL_FROM_NAME="${APP_NAME}"
-
-# Security Settings
-SESSION_SECURE_COOKIE=true
-PASSWORD_TIMEOUT=10800
-LOGIN_THROTTLE=6
-LOGIN_THROTTLE_DECAY=60
 ```
 
-### Step 5: Application Setup
+### Step 3: Docker Setup
 
-#### Option A: Using SSH (if available)
+1. **Start Docker Desktop**
+2. **Run the application:**
+   ```bash
+   docker-compose up -d
+   ```
+
+### Step 4: Application Setup
+
+1. **Generate application key:**
+   ```bash
+   docker-compose exec laravel.test php artisan key:generate
+   ```
+
+2. **Run database migrations:**
+   ```bash
+   docker-compose exec laravel.test php artisan migrate
+   ```
+
+3. **Set proper permissions:**
+   ```bash
+   docker-compose exec laravel.test chmod -R 775 storage bootstrap/cache
+   ```
+
+### Step 5: Production Optimization
+
+1. **Optimize for production:**
+   ```bash
+   docker-compose exec laravel.test php artisan config:cache
+   docker-compose exec laravel.test php artisan route:cache
+   docker-compose exec laravel.test php artisan view:cache
+   ```
+
+2. **Build frontend assets:**
+   ```bash
+   docker-compose exec laravel.test npm run build
+   ```
+
+## 🚀 Production Deployment
+
+### Using Docker Compose
+
+1. **Start services:**
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Check status:**
+   ```bash
+   docker-compose ps
+   ```
+
+3. **View logs:**
+   ```bash
+   docker-compose logs
+   ```
+
+### Using Docker Swarm (for production)
+
+1. **Initialize swarm:**
+   ```bash
+   docker swarm init
+   ```
+
+2. **Deploy stack:**
+   ```bash
+   docker stack deploy -c docker-compose.yml jewelry-manager
+   ```
+
+## 🔧 Maintenance Commands
+
+### Database Operations
 ```bash
-cd public_html/jewelry-manager
-composer install --optimize-autoloader --no-dev
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan storage:link
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+# Run migrations
+docker-compose exec laravel.test php artisan migrate
+
+# Seed database
+docker-compose exec laravel.test php artisan db:seed
+
+# Backup database
+docker-compose exec mysql mysqldump -u sail -ppassword jewelry_new > backup.sql
 ```
 
-#### Option B: Using cPanel Terminal (if available)
-1. **Go to "Terminal" in cPanel**
-2. **Navigate to your project directory**
-3. **Run the commands above**
-
-#### Option C: Manual Setup (if no terminal access)
-1. **Generate APP_KEY manually** (use online Laravel key generator)
-2. **Create storage link manually** (see below)
-3. **Import database manually** (see below)
-
-### Step 6: Database Migration
-
-#### Option A: Using Artisan (if terminal available)
+### Application Commands
 ```bash
-php artisan migrate:fresh --seed
+# Clear caches
+docker-compose exec laravel.test php artisan cache:clear
+docker-compose exec laravel.test php artisan config:clear
+docker-compose exec laravel.test php artisan route:clear
+
+# View logs
+docker-compose exec laravel.test php artisan tail
+
+# Access tinker
+docker-compose exec laravel.test php artisan tinker
 ```
 
-#### Option B: Manual Database Import
-1. **Go to "phpMyAdmin" in cPanel**
-2. **Select your database**
-3. **Import the SQL file** (you'll need to export from local first)
-4. **Or run SQL commands manually** (see database/migrations/)
-
-### Step 7: Storage Link Setup
-
-#### Option A: Using Artisan
+### Container Management
 ```bash
-php artisan storage:link
+# Stop services
+docker-compose down
+
+# Restart services
+docker-compose restart
+
+# Update containers
+docker-compose pull
+docker-compose up -d
 ```
 
-#### Option B: Manual Setup
-1. **In File Manager, go to `public_html/jewelry-manager/public/`**
-2. **Create a symbolic link** from `storage` to `../storage/app/public`
-3. **Or copy storage files** to public directory
+## 🔒 Security Considerations
 
-### Step 8: Permissions Setup
+1. **Change default passwords** in production
+2. **Use environment variables** for sensitive data
+3. **Enable SSL/TLS** for HTTPS
+4. **Regular security updates** for containers
+5. **Backup strategy** for database and files
 
-Set proper file permissions:
-- **Directories**: 755
-- **Files**: 644
-- **Storage directory**: 775
-- **Bootstrap/cache**: 775
+## 📊 Monitoring
 
-### Step 9: URL Configuration
+### Health Checks
+```bash
+# Check application health
+curl http://localhost/health
 
-#### Option A: Subdirectory Setup
-If installed in `public_html/jewelry-manager/`:
-- **Access URL**: `https://yourdomain.com/jewelry-manager`
-- **No additional configuration needed**
+# Check database connection
+docker-compose exec laravel.test php artisan tinker --execute="DB::connection()->getPdo();"
+```
 
-#### Option B: Root Domain Setup
-If you want it on the main domain:
-1. **Move all files** from `jewelry-manager/` to `public_html/`
-2. **Move contents** of `public/` to `public_html/`
-3. **Update paths** in `index.php` and `.htaccess`
+### Logs
+```bash
+# Application logs
+docker-compose logs laravel.test
 
-### Step 10: Final Configuration
+# Database logs
+docker-compose logs mysql
 
-1. **Test the application** by visiting your URL
-2. **Login with default credentials:**
-   - Admin: `admin@jewelry.com` / `password`
-   - Distributor: `distributor1@jewelry.com` / `password`
-   - Factory: `factory@jewelry.com` / `password`
-3. **Change default passwords** immediately
-4. **Update company settings** in admin panel
+# All logs
+docker-compose logs -f
+```
 
-## 🔧 Troubleshooting
+## 🆘 Troubleshooting
 
 ### Common Issues
 
-#### 1. "500 Internal Server Error"
-- Check file permissions
-- Verify `.env` configuration
-- Check error logs in cPanel
+1. **Port conflicts:**
+   - Check if ports 80, 3306 are available
+   - Modify ports in docker-compose.yml if needed
 
-#### 2. "Database Connection Failed"
-- Verify database credentials
-- Check database host (usually `localhost`)
-- Ensure database exists and user has permissions
+2. **Permission issues:**
+   ```bash
+   docker-compose exec laravel.test chmod -R 775 storage bootstrap/cache
+   ```
 
-#### 3. "Storage Link Not Working"
-- Create manual symbolic link
-- Or copy storage files to public directory
+3. **Database connection:**
+   - Verify MySQL container is running
+   - Check database credentials in .env
 
-#### 4. "Composer Dependencies Missing"
-- Upload `vendor/` folder
-- Or run `composer install` via SSH
+4. **Application not loading:**
+   - Check if all containers are running
+   - Verify APP_URL in .env matches your domain
 
-### Error Logs
-- **cPanel Error Logs**: Check "Error Logs" in cPanel
-- **Laravel Logs**: Check `storage/logs/laravel.log`
-- **PHP Error Logs**: Check "PHP Error Log" in cPanel
+### Support
 
-## 🔒 Security Checklist
+- Check Docker Desktop is running
+- Verify all containers are up: `docker-compose ps`
+- Check logs: `docker-compose logs [service-name]`
+- Ensure `.env` file has correct configuration
 
-- [ ] **Change default passwords**
-- [ ] **Set APP_DEBUG=false**
-- [ ] **Use HTTPS**
-- [ ] **Set proper file permissions**
-- [ ] **Update admin email**
-- [ ] **Configure backup system**
-- [ ] **Set up SSL certificate**
-- [ ] **Enable security headers**
+## 🎉 Success!
 
-## 📞 Support
+Your Brayne Jewelry Manager is now running with Docker! 
 
-If you encounter issues:
-1. **Check error logs**
-2. **Verify all steps completed**
-3. **Contact your hosting provider**
-4. **Create an issue on GitHub**
+- **Application**: http://localhost (or your domain)
+- **Database**: Accessible via Docker container
+- **Logs**: Available via `docker-compose logs`
 
-## 🚀 Post-Deployment
-
-### Regular Maintenance
-- **Backup database** regularly
-- **Update Laravel** when new versions are released
-- **Monitor error logs**
-- **Check disk space**
-
-### Performance Optimization
-- **Enable OPcache** (if available)
-- **Use CDN** for static assets
-- **Optimize images**
-- **Enable compression**
-
----
-
-**Your Brayne Jewelry Manager is now ready for production! 🏪✨** 
+For development, see the `DOCKER_MIGRATION_GUIDE.md` file for detailed setup instructions. 

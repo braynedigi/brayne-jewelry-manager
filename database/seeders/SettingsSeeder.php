@@ -114,5 +114,78 @@ class SettingsSeeder extends Seeder
             'Application Title',
             'The title displayed in browser tabs and throughout the application'
         );
+
+        // Email settings
+        Setting::setValue(
+            'mail_mailer',
+            'smtp',
+            'string',
+            'email',
+            'Mail Driver',
+            'The mail driver to use (smtp, sendmail, mailgun, ses, postmark, resend)'
+        );
+
+        Setting::setValue(
+            'mail_host',
+            'smtp.gmail.com',
+            'string',
+            'email',
+            'SMTP Host',
+            'The SMTP host address'
+        );
+
+        Setting::setValue(
+            'mail_port',
+            '587',
+            'string',
+            'email',
+            'SMTP Port',
+            'The SMTP port number'
+        );
+
+        Setting::setValue(
+            'mail_username',
+            '',
+            'string',
+            'email',
+            'SMTP Username',
+            'The SMTP username (usually your email address)'
+        );
+
+        Setting::setValue(
+            'mail_password',
+            '',
+            'string',
+            'email',
+            'SMTP Password',
+            'The SMTP password or app password'
+        );
+
+        Setting::setValue(
+            'mail_encryption',
+            'tls',
+            'string',
+            'email',
+            'SMTP Encryption',
+            'The encryption type (tls, ssl, or null)'
+        );
+
+        Setting::setValue(
+            'mail_from_address',
+            'noreply@jewelrymanager.com',
+            'string',
+            'email',
+            'From Email Address',
+            'The email address that emails will be sent from'
+        );
+
+        Setting::setValue(
+            'mail_from_name',
+            'Jewelry Manager',
+            'string',
+            'email',
+            'From Name',
+            'The name that emails will be sent from'
+        );
     }
 }

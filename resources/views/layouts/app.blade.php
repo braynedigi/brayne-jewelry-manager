@@ -471,6 +471,8 @@
                         <span>Settings</span>
                     </a>
                 </div>
+
+
             @elseif(auth()->user()->isDistributor())
                 <div class="nav-item">
                     <a href="{{ route('distributor.dashboard') }}" class="nav-link {{ request()->routeIs('distributor.dashboard') ? 'active' : '' }}">

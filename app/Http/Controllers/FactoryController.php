@@ -149,7 +149,7 @@ class FactoryController extends Controller
             // Update status and timeline
             $updateData = [
                 'order_status' => $newStatus,
-                'production_notes' => $validated['production_notes'],
+                'production_notes' => $validated['production_notes'] ?? null,
             ];
 
             // Update estimated hours if provided
@@ -171,7 +171,7 @@ class FactoryController extends Controller
             OrderStatusHistory::create([
                 'order_id' => $order->id,
                 'status' => $newStatus,
-                'notes' => $validated['production_notes'] ?: "Status changed from {$oldStatus} to {$newStatus}",
+                'notes' => ($validated['production_notes'] ?? null) ?: "Status changed from {$oldStatus} to {$newStatus}",
                 'changed_by' => $user->id,
             ]);
 
