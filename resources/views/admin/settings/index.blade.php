@@ -34,6 +34,9 @@ use App\Models\Setting;
                     <button type="button" class="tab-button" onclick="switchTab('email-templates')">
                         <i class="fas fa-file-alt me-2"></i>Email Templates
                     </button>
+                    <button type="button" class="tab-button" onclick="switchTab('import-export')">
+                        <i class="fas fa-file-import me-2"></i>Import/Export
+                    </button>
                 </div>
                 
                 <style>
@@ -482,6 +485,170 @@ use App\Models\Setting;
                         </div>
                     </div>
 
+                    <div class="tab-section" id="import-export">
+                        <h5 class="mb-4">
+                            <i class="fas fa-file-import me-2"></i>Import/Export Management
+                        </h5>
+                        
+                        <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Data Management:</strong> Import and export your data in CSV format. Download templates to ensure proper formatting.
+                        </div>
+
+                        <!-- Statistics Cards -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-box fa-2x mb-2"></i>
+                                        <h5 class="card-title">{{ \App\Models\Product::count() }}</h5>
+                                        <p class="card-text">Products</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-friends fa-2x mb-2"></i>
+                                        <h5 class="card-title">{{ \App\Models\Customer::count() }}</h5>
+                                        <p class="card-text">Customers</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                                        <h5 class="card-title">{{ \App\Models\Order::count() }}</h5>
+                                        <p class="card-text">Orders</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-file-csv fa-2x mb-2"></i>
+                                        <h5 class="card-title">CSV</h5>
+                                        <p class="card-text">Format</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Products Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-box me-2"></i>Products
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Export Products</h6>
+                                        <p class="text-muted">Download all products as CSV file</p>
+                                        <a href="{{ route('import-export.export-products') }}" class="btn btn-success">
+                                            <i class="fas fa-download me-2"></i>Export Products
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Import Products</h6>
+                                        <p class="text-muted">Upload CSV file to import products</p>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('import-export.download-product-template') }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-file-download me-2"></i>Template
+                                            </a>
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importProductsModal">
+                                                <i class="fas fa-upload me-2"></i>Import
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customers Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-user-friends me-2"></i>Customers
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Export Customers</h6>
+                                        <p class="text-muted">Download all customers as CSV file</p>
+                                        <a href="{{ route('import-export.export-customers') }}" class="btn btn-success">
+                                            <i class="fas fa-download me-2"></i>Export Customers
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Import Customers</h6>
+                                        <p class="text-muted">Upload CSV file to import customers</p>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('import-export.download-customer-template') }}" class="btn btn-outline-primary">
+                                                <i class="fas fa-file-download me-2"></i>Template
+                                            </a>
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importCustomersModal">
+                                                <i class="fas fa-upload me-2"></i>Import
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Orders Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-shopping-cart me-2"></i>Orders
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Export Orders</h6>
+                                        <p class="text-muted">Download all orders as CSV file</p>
+                                        <a href="{{ route('import-export.export-orders') }}" class="btn btn-success">
+                                            <i class="fas fa-download me-2"></i>Export Orders
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Import Orders</h6>
+                                        <p class="text-muted text-muted">Order import is not available for data integrity</p>
+                                        <button class="btn btn-secondary" disabled>
+                                            <i class="fas fa-ban me-2"></i>Not Available
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if(session('import_results'))
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Import Results</h6>
+                                <ul class="mb-0">
+                                    @foreach(session('import_results') as $result)
+                                        <li>{{ $result }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        @if(session('import_errors'))
+                            <div class="alert alert-danger">
+                                <h6><i class="fas fa-exclamation-triangle me-2"></i>Import Errors</h6>
+                                <ul class="mb-0">
+                                    @foreach(session('import_errors') as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+                    </div>
+
                     <div class="d-flex justify-content-between mt-4">
                         <a href="{{ route('admin.settings.refresh') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-sync-alt me-2"></i>Refresh Cache
@@ -541,7 +708,7 @@ document.addEventListener('DOMContentLoaded', function() {
     switchTab('appearance');
     
     // Log all available tabs for debugging
-    console.log('Available tabs: appearance, notifications, general, email, couriers');
+    console.log('Available tabs: appearance, notifications, general, email, couriers, import-export');
     
     // Test email function
     window.testEmail = function() {
@@ -586,6 +753,94 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     });
 </script>
+
+<!-- Import Products Modal -->
+<div class="modal fade" id="importProductsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-upload me-2"></i>Import Products
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('import-export.import-products') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Instructions:</strong> Upload a CSV file with product data. Make sure to use the template format for best results.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="products_file" class="form-label">CSV File</label>
+                        <input type="file" class="form-control" id="products_file" name="file" accept=".csv" required>
+                        <div class="form-text">Select a CSV file to import products</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="products_skip_duplicates" name="skip_duplicates" value="1" checked>
+                            <label class="form-check-label" for="products_skip_duplicates">
+                                Skip duplicate products (based on SKU)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Import Products
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Import Customers Modal -->
+<div class="modal fade" id="importCustomersModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-upload me-2"></i>Import Customers
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('import-export.import-customers') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Instructions:</strong> Upload a CSV file with customer data. Make sure to use the template format for best results.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="customers_file" class="form-label">CSV File</label>
+                        <input type="file" class="form-control" id="customers_file" name="file" accept=".csv" required>
+                        <div class="form-text">Select a CSV file to import customers</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="customers_skip_duplicates" name="skip_duplicates" value="1" checked>
+                            <label class="form-check-label" for="customers_skip_duplicates">
+                                Skip duplicate customers (based on email)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload me-2"></i>Import Customers
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Add Courier Modal -->
 <div class="modal fade" id="addCourierModal" tabindex="-1">

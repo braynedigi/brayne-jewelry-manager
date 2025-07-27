@@ -14,6 +14,7 @@ use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\FactoryController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\OrderTemplateController;
+use App\Http\Controllers\ImportExportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,27 +83,20 @@ Route::middleware('auth')->group(function () {
     
     // API route for getting product pricing
     Route::get('/api/products/{product}/pricing', [ProductController::class, 'getPricing'])->name('api.products.pricing');
-Route::get('/api/products/subcategories', [ProductController::class, 'getSubCategories'])->name('api.products.subcategories');
-
-// Temporary debug route
-Route::get('/debug/product/{sku}', function($sku) {
-    $product = App\Models\Product::where('sku', $sku)->first();
-    if (!$product) {
-        return response()->json(['error' => 'Product not found']);
-    }
+    Route::get('/api/products/subcategories', [ProductController::class, 'getSubCategories'])->name('api.products.subcategories');
     
-    return response()->json([
-        'name' => $product->name,
-        'sku' => $product->sku,
-        'has_fonts' => $product->hasFonts(),
-        'fonts' => $product->fonts,
-        'font_requirement' => $product->font_requirement,
-        'fonts_count' => count($product->fonts)
-    ]);
-});
-    
-
-    
+    // Import/Export routes
+    Route::prefix('import-export')->name('import-export.')->group(function () {
+        Route::get('/', [ImportExportController::class, 'index'])->name('index');
+        Route::get('/export-products', [ImportExportController::class, 'exportProducts'])->name('export-products');
+        Route::post('/import-products', [ImportExportController::class, 'importProducts'])->name('import-products');
+        Route::get('/export-customers', [ImportExportController::class, 'exportCustomers'])->name('export-customers');
+        Route::post('/import-customers', [ImportExportController::class, 'importCustomers'])->name('import-customers');
+        Route::get('/export-orders', [ImportExportController::class, 'exportOrders'])->name('export-orders');
+        Route::get('/download-product-template', [ImportExportController::class, 'downloadProductTemplate'])->name('download-product-template');
+        Route::get('/download-customer-template', [ImportExportController::class, 'downloadCustomerTemplate'])->name('download-customer-template');
+        Route::get('/stats', [ImportExportController::class, 'getStats'])->name('stats');
+    });
 
 
     // Product management (admin only)
@@ -233,22 +227,6 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Temporary test route for logo debugging
-Route::get('/test-logo', function () {
-    $logoPath = \App\Models\Setting::getValue('login_logo');
-    $logoUrl = asset('storage/' . $logoPath);
-    $filePath = storage_path('app/public/' . $logoPath);
-    
-    return response()->json([
-        'logo_path' => $logoPath,
-        'logo_url' => $logoUrl,
-        'file_path' => $filePath,
-        'file_exists' => file_exists($filePath),
-        'file_size' => file_exists($filePath) ? filesize($filePath) : null,
-        'mime_type' => file_exists($filePath) ? mime_content_type($filePath) : null,
-    ]);
-});
-
 // API route for notification count
 Route::get('/api/notifications/count', function () {
     if (!auth()->check()) {
@@ -258,30 +236,3 @@ Route::get('/api/notifications/count', function () {
     $count = \App\Services\NotificationService::getUnreadCount(auth()->id());
     return response()->json(['count' => $count]);
 })->name('api.notifications.count');
-
-// Test route for email templates (admin only)
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/test-email-template', function () {
-        $user = auth()->user();
-        $order = \App\Models\Order::first();
-        
-        if ($order) {
-            \App\Services\NotificationService::sendToUser(
-                $user->id,
-                'order_status_updated',
-                'Test Email Template',
-                'This is a test of the new email template system',
-                [
-                    'order_id' => $order->id,
-                    'old_status' => 'pending',
-                    'new_status' => 'approved',
-                    'notes' => 'Test notes for the email template'
-                ]
-            );
-            
-            return response()->json(['success' => true, 'message' => 'Test email sent!']);
-        }
-        
-        return response()->json(['success' => false, 'message' => 'No orders found for testing']);
-    })->name('test.email-template');
-});

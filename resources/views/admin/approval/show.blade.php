@@ -83,6 +83,10 @@
                             <tr>
                                 <th>Product</th>
                                 <th>Metal</th>
+                                <th>Stones</th>
+                                <th>Ring Size</th>
+                                <th>Font</th>
+                                <th>Names</th>
                                 <th>Quantity</th>
                                 <th>Unit Price</th>
                                 <th>Total</th>
@@ -111,6 +115,72 @@
                                 <td>
                                     <span class="badge bg-secondary">{{ $product->pivot->metal }}</span>
                                 </td>
+                                <td>
+                                    @if($product->pivot->stones && trim($product->pivot->stones))
+                                        @php
+                                            $stones = is_array($product->pivot->stones) ? $product->pivot->stones : explode(', ', $product->pivot->stones);
+                                            $stones = array_filter(array_map('trim', $stones));
+                                        @endphp
+                                        @if(count($stones) > 0)
+                                            @foreach($stones as $stone)
+                                                <span class="badge bg-warning me-1">
+                                                    <i class="fas fa-gem me-1"></i>{{ $stone }}
+                                                </span>
+                                            @endforeach
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($product->pivot->ring_size && trim($product->pivot->ring_size))
+                                        <span class="badge bg-dark">
+                                            <i class="fas fa-circle me-1"></i>{{ trim($product->pivot->ring_size) }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($product->pivot->font)
+                                        @php
+                                            $fonts = is_array($product->pivot->font) ? $product->pivot->font : explode(', ', $product->pivot->font);
+                                        @endphp
+                                        @foreach($fonts as $font)
+                                            @if(trim($font))
+                                                <span class="badge bg-info me-1">{{ trim($font) }}</span>
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @php
+                                        $names = is_array($product->pivot->names) ? $product->pivot->names : json_decode($product->pivot->names, true);
+                                        $fonts = is_array($product->pivot->font) ? $product->pivot->font : explode(', ', $product->pivot->font);
+                                    @endphp
+                                    @if($names && is_array($names) && count($names) > 0)
+                                        @foreach($names as $index => $name)
+                                            @if($name)
+                                                <div class="mb-1">
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-signature me-1"></i>{{ $name }}
+                                                    </span>
+                                                    @if(isset($fonts[$index]) && trim($fonts[$index]))
+                                                        <span class="badge bg-info ms-1">
+                                                            <i class="fas fa-font me-1"></i>{{ trim($fonts[$index]) }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td>{{ $product->pivot->quantity }}</td>
                                 <td>{{ $order->distributor->currency_symbol }}{{ number_format($product->pivot->price, 2) }}</td>
                                 <td>{{ $order->distributor->currency_symbol }}{{ number_format($product->pivot->price * $product->pivot->quantity, 2) }}</td>
@@ -119,7 +189,7 @@
                         </tbody>
                         <tfoot>
                             <tr class="table-primary">
-                                <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                <td colspan="8" class="text-end"><strong>Total:</strong></td>
                                 <td><strong>{{ $order->distributor->currency_symbol }}{{ number_format($order->total_amount, 2) }}</strong></td>
                             </tr>
                         </tfoot>
