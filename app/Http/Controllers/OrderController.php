@@ -232,6 +232,10 @@ class OrderController extends Controller
             'products.*.metal' => 'required|string',
             'products.*.fonts' => 'nullable|array',
             'products.*.custom_fonts' => 'nullable|array',
+            'products.*.names' => 'nullable|array',
+            'products.*.names.*' => 'nullable|string|max:10|regex:/^[A-Za-z\s]+$/',
+            'products.*.stones' => 'nullable|array',
+            'products.*.ring_size' => 'nullable|string',
         ];
 
         // Only require distributor_id for admins
@@ -303,6 +307,38 @@ class OrderController extends Controller
                     if (count($selectedFonts) !== $product->font_requirement) {
                         throw new \Exception("Product '{$product->name}' requires exactly {$product->font_requirement} font(s), but " . count($selectedFonts) . " were provided.");
                     }
+                    
+                    // Validate names are provided when fonts are required
+                    if ($product->font_requirement > 0) {
+                        $names = $productData['names'] ?? [];
+                        $names = array_filter($names, function($name) { return !empty(trim($name)); });
+                        
+                        if (count($names) !== $product->font_requirement) {
+                            throw new \Exception("Product '{$product->name}' requires exactly {$product->font_requirement} name(s) to be engraved when fonts are selected.");
+                        }
+                    }
+                }
+                
+                // Process names for storage
+                $names = [];
+                if (isset($productData['names']) && is_array($productData['names'])) {
+                    $names = array_map('trim', array_filter($productData['names']));
+                }
+
+                // Handle stones
+                $selectedStones = [];
+                if (isset($productData['stones']) && is_array($productData['stones'])) {
+                    $selectedStones = array_filter($productData['stones']);
+                }
+
+                // Validate stone requirement
+                if ($product->requires_stones && empty($selectedStones)) {
+                    throw new \Exception("Product '{$product->name}' requires stones to be selected.");
+                }
+
+                // Validate ring size requirement
+                if ($product->requires_ring_size && empty($productData['ring_size'])) {
+                    throw new \Exception("Product '{$product->name}' requires a ring size to be selected.");
                 }
                 
                 $order->products()->attach($productData['product_id'], [
@@ -310,6 +346,9 @@ class OrderController extends Controller
                     'price' => $price,
                     'metal' => $productData['metal'],
                     'font' => !empty($selectedFonts) ? implode(', ', $selectedFonts) : null,
+                    'names' => !empty($names) ? json_encode($names) : null,
+                    'stones' => !empty($selectedStones) ? implode(', ', $selectedStones) : null,
+                    'ring_size' => $productData['ring_size'] ?? null,
                 ]);
             }
 
@@ -468,11 +507,28 @@ class OrderController extends Controller
                 $isInternational = $distributor ? $distributor->is_international : false;
                 $price = $product->getPriceForMetal($productData['metal'], $isInternational);
                 
+                // Handle fonts for update
+                $selectedFonts = [];
+                if (isset($productData['fonts']) && is_array($productData['fonts'])) {
+                    $selectedFonts = array_filter($productData['fonts']);
+                }
+                if (isset($productData['custom_fonts']) && is_array($productData['custom_fonts'])) {
+                    $customFonts = array_filter($productData['custom_fonts']);
+                    $selectedFonts = array_merge($selectedFonts, $customFonts);
+                }
+                
+                // Process names for storage
+                $names = [];
+                if (isset($productData['names']) && is_array($productData['names'])) {
+                    $names = array_map('trim', array_filter($productData['names']));
+                }
+                
                 $order->products()->attach($productData['product_id'], [
                     'quantity' => $productData['quantity'],
                     'price' => $price,
                     'metal' => $productData['metal'],
-                    'font' => $product->fonts ? implode(', ', $product->fonts) : null,
+                    'font' => !empty($selectedFonts) ? implode(', ', $selectedFonts) : null,
+                    'names' => !empty($names) ? json_encode($names) : null,
                 ]);
             }
 

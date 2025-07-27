@@ -29,9 +29,9 @@
 
                             <div class="mb-3">
                                 <label for="image" class="form-label">Product Image</label>
-                                @if($product->image)
+                                @if($product->hasImage())
                                     <div class="mb-2">
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="Current Product Image" 
+                                        <img src="{{ $product->getImageUrl() }}" alt="Current Product Image" 
                                              class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
                                         <small class="d-block text-muted">Current image</small>
                                     </div>
@@ -186,6 +186,58 @@
                         </div>
                     </div>
 
+                    <div class="mb-3" id="stonesSection">
+                        <label class="form-label">Available Stones</label>
+                        <div class="border rounded p-3">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="requires_stones" name="requires_stones" value="1"
+                                               {{ old('requires_stones', $product->requires_stones) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="requires_stones">
+                                            This product requires stones
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">Enable this if distributors need to select stones when ordering this product</small>
+                                </div>
+                            </div>
+                            
+                            <p class="text-muted small mb-3">Select all available stones for this product. Distributors will be able to choose from these stones when ordering.</p>
+                            <div id="stonesContainer">
+                                @foreach($stones as $stone)
+                                    <div class="form-check">
+                                        <input class="form-check-input stone-checkbox" type="checkbox" 
+                                               id="stone_{{ $stone->id }}" name="stones[]" value="{{ $stone->name }}"
+                                               {{ in_array($stone->name, old('stones', $product->stones ?? [])) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="stone_{{ $stone->id }}">
+                                            {{ $stone->name }}
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="ringSizeSection">
+                        <label class="form-label">Ring Size Requirement</label>
+                        <div class="border rounded p-3">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="requires_ring_size" name="requires_ring_size" value="1"
+                                               {{ old('requires_ring_size', $product->requires_ring_size) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="requires_ring_size">
+                                            This product requires ring size selection
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">Enable this if distributors need to select a ring size when ordering this product</small>
+                                </div>
+                            </div>
+                            
+                            <p class="text-muted small mb-3">When enabled, distributors will be prompted to select a ring size from the available options when ordering this product.</p>
+                        </div>
+                    </div>
+
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('products.show', $product) }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Back to Details
@@ -208,7 +260,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const customSubCategoryDiv = document.getElementById('customSubCategoryDiv');
     const customSubCategoryInput = document.getElementById('custom_sub_category');
     const fontsSection = document.getElementById('fontsSection');
+    const stonesSection = document.getElementById('stonesSection');
+    const ringSizeSection = document.getElementById('ringSizeSection');
     const metalCheckboxes = document.querySelectorAll('.metal-checkbox');
+    const stoneCheckboxes = document.querySelectorAll('.stone-checkbox');
+    const requiresStonesCheckbox = document.getElementById('requires_stones');
+    const requiresRingSizeCheckbox = document.getElementById('requires_ring_size');
     
     const currentSubCategory = @json($product->sub_category);
     const currentMetalPricing = @json($product->metal_pricing ?? []);
@@ -337,6 +394,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Handle stones requirement change
+    requiresStonesCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        stoneCheckboxes.forEach(checkbox => {
+            checkbox.disabled = !isChecked;
+            if (!isChecked) {
+                checkbox.checked = false;
+            }
+        });
+    });
+
+    // Handle ring size requirement change
+    requiresRingSizeCheckbox.addEventListener('change', function() {
+        // No additional logic needed for ring size as it's just a boolean flag
+    });
+
     // Set initial state
     if (categorySelect.value) {
         categorySelect.dispatchEvent(new Event('change'));
@@ -348,6 +421,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize font requirement
     fontRequirementSelect.dispatchEvent(new Event('change'));
+    
+    // Initialize stones and ring size requirements
+    requiresStonesCheckbox.dispatchEvent(new Event('change'));
 });
 </script>
 @endpush

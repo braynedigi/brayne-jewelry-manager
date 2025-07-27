@@ -38,9 +38,9 @@
 
                             <div class="mb-3">
                                 <label for="logo" class="form-label">Logo/Image</label>
-                                @if($user->logo)
+                                @if($user->hasLogo())
                                     <div class="mb-2">
-                                        <img src="{{ asset('storage/' . $user->logo) }}" alt="Current Logo"
+                                        <img src="{{ $user->getLogoUrl() }}" alt="Current Logo"
                                              class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
                                         <small class="d-block text-muted">Current logo</small>
                                     </div>

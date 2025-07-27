@@ -43,6 +43,99 @@
             line-height: 1.6;
         }
 
+        /* Enhanced Image Styling */
+        .product-image {
+            transition: all 0.3s ease;
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .product-image:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        .user-logo {
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-logo:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+
+        .image-placeholder {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border: 2px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .image-placeholder:hover {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        }
+
+        .image-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .image-overlay i {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        /* Responsive image grid */
+        .image-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        @media (max-width: 768px) {
+            .image-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        /* Loading animation for images */
+        .image-loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         /* Sidebar Styling */
         .sidebar {
             position: fixed;
@@ -534,8 +627,8 @@
             @include('components.notifications')
             <div class="user-info">
                 <div class="user-avatar">
-                    @if(auth()->user()->logo)
-                        <img src="{{ asset('storage/' . auth()->user()->logo) }}" alt="{{ auth()->user()->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    @if(auth()->user()->hasLogo())
+                        <img src="{{ auth()->user()->getLogoUrl() }}" alt="{{ auth()->user()->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                     @else
                         {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
                     @endif

@@ -24,16 +24,21 @@
                     <div class="col-md-4">
                         @if($product->hasImage())
                             <div class="text-center mb-3">
-                                <img src="{{ $product->getImageUrl() }}" 
-                                     alt="{{ $product->name }}" 
-                                     class="img-fluid rounded shadow-sm" 
-                                     style="max-height: 300px; object-fit: contain;">
+                                <div class="image-container">
+                                    <img src="{{ $product->getImageUrl() }}" 
+                                         alt="{{ $product->name }}" 
+                                         class="product-image img-fluid" 
+                                         style="max-height: 300px; object-fit: contain;">
+                                    <div class="image-overlay">
+                                        <i class="fas fa-expand"></i>
+                                    </div>
+                                </div>
                             </div>
                         @else
                             <div class="text-center mb-3">
-                                <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                <div class="image-placeholder" 
                                      style="height: 300px;">
-                                    <div class="text-muted">
+                                    <div>
                                         <i class="fas fa-image fa-3x mb-2"></i>
                                         <p>No image available</p>
                                     </div>

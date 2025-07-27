@@ -196,5 +196,11 @@ class DatabaseSeeder extends Seeder
             'email' => 'premium@logistics.com',
             'is_active' => true,
         ]);
+
+        // Call other seeders
+        $this->call([
+            ProductStoneSeeder::class,
+            RingSizeSeeder::class,
+        ]);
     }
 }

@@ -19,8 +19,10 @@ class ProductController extends Controller
         $categories = Product::getCategories();
         $metals = Product::getMetals();
         $fonts = \App\Models\ProductFont::active()->ordered()->get();
+        $stones = \App\Models\ProductStone::active()->ordered()->get();
+        $ringSizes = \App\Models\RingSize::active()->ordered()->get();
         
-        return view('products.create', compact('categories', 'metals', 'fonts'));
+        return view('products.create', compact('categories', 'metals', 'fonts', 'stones', 'ringSizes'));
     }
 
     public function store(Request $request)
@@ -36,6 +38,9 @@ class ProductController extends Controller
             'metals.*' => 'in:' . implode(',', Product::getMetals()),
             'fonts' => 'nullable|array',
             'font_requirement' => 'nullable|integer|min:0|max:10',
+            'stones' => 'nullable|array',
+            'requires_stones' => 'boolean',
+            'requires_ring_size' => 'boolean',
         ]);
 
         // Handle image upload
@@ -85,6 +90,23 @@ class ProductController extends Controller
         // Handle font requirement
         $validated['font_requirement'] = $request->input('font_requirement', 0);
 
+        // Handle stones
+        if ($request->filled('stones')) {
+            $stones = $request->input('stones');
+            if (is_array($stones)) {
+                // Filter out empty values and trim
+                $validated['stones'] = array_filter(array_map('trim', $stones));
+            } else {
+                // Handle as string (fallback)
+                $stones = array_filter(explode(',', $stones));
+                $validated['stones'] = array_map('trim', $stones);
+            }
+        }
+
+        // Handle stone and ring size requirements
+        $validated['requires_stones'] = $request->has('requires_stones');
+        $validated['requires_ring_size'] = $request->has('requires_ring_size');
+
         $validated['is_active'] = $request->has('is_active');
 
         Product::create($validated);
@@ -103,8 +125,10 @@ class ProductController extends Controller
         $subCategories = Product::getSubCategories($product->category);
         $metals = Product::getMetals();
         $fonts = \App\Models\ProductFont::active()->ordered()->get();
+        $stones = \App\Models\ProductStone::active()->ordered()->get();
+        $ringSizes = \App\Models\RingSize::active()->ordered()->get();
         
-        return view('products.edit', compact('product', 'categories', 'subCategories', 'metals', 'fonts'));
+        return view('products.edit', compact('product', 'categories', 'subCategories', 'metals', 'fonts', 'stones', 'ringSizes'));
     }
 
     public function update(Request $request, Product $product)
@@ -113,11 +137,16 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'sku' => 'required|string|max:255|unique:products,sku,' . $product->id,
-            'category' => 'required|in:Necklaces,Rings',
+            'category' => 'required|string|max:255',
             'sub_category' => 'required|string|max:255',
             'custom_sub_category' => 'nullable|string|max:255',
             'metals' => 'required|array|min:1',
             'metals.*' => 'in:' . implode(',', Product::getMetals()),
+            'fonts' => 'nullable|array',
+            'font_requirement' => 'nullable|integer|min:0|max:10',
+            'stones' => 'nullable|array',
+            'requires_stones' => 'boolean',
+            'requires_ring_size' => 'boolean',
         ]);
 
         // Handle image upload
@@ -166,6 +195,23 @@ class ProductController extends Controller
                 $validated['fonts'] = array_map('trim', $fonts);
             }
         }
+
+        // Handle stones
+        if ($request->filled('stones')) {
+            $stones = $request->input('stones');
+            if (is_array($stones)) {
+                // Filter out empty values and trim
+                $validated['stones'] = array_filter(array_map('trim', $stones));
+            } else {
+                // Handle as string (fallback)
+                $stones = array_filter(explode(',', $stones));
+                $validated['stones'] = array_map('trim', $stones);
+            }
+        }
+
+        // Handle stone and ring size requirements
+        $validated['requires_stones'] = $request->has('requires_stones');
+        $validated['requires_ring_size'] = $request->has('requires_ring_size');
 
         $validated['is_active'] = $request->has('is_active');
 

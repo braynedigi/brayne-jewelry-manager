@@ -93,8 +93,8 @@
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center">
-                                        @if($product->image)
-                                            <img src="{{ asset('storage/' . $product->image) }}" 
+                                        @if($product->hasImage())
+                                            <img src="{{ $product->getImageUrl() }}" 
                                                  alt="{{ $product->name }}" class="me-2" width="40" height="40" style="object-fit: cover;">
                                         @else
                                             <div class="bg-secondary me-2 d-flex align-items-center justify-content-center" 

@@ -177,6 +177,55 @@
                                 </div>
                             </div>
 
+                            <div class="mb-3" id="stonesSection">
+                                <label class="form-label">Available Stones</label>
+                                <div class="border rounded p-3">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="requires_stones" name="requires_stones" value="1">
+                                                <label class="form-check-label" for="requires_stones">
+                                                    <strong>This product requires stones</strong>
+                                                </label>
+                                            </div>
+                                            <small class="form-text text-muted">Check this if distributors must select stones when ordering this product</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-muted small mb-3">Select all available stones for this product. Distributors will be able to choose from these stones when ordering.</p>
+                                    <div id="stonesContainer">
+                                        @foreach($stones as $stone)
+                                            <div class="form-check">
+                                                <input class="form-check-input stone-checkbox" type="checkbox" 
+                                                       id="stone_{{ $stone->id }}" name="stones[]" value="{{ $stone->name }}">
+                                                <label class="form-check-label" for="stone_{{ $stone->id }}">
+                                                    {{ $stone->name }}
+                                                </label>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3" id="ringSizeSection">
+                                <label class="form-label">Ring Size Requirement</label>
+                                <div class="border rounded p-3">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="requires_ring_size" name="requires_ring_size" value="1">
+                                                <label class="form-check-label" for="requires_ring_size">
+                                                    <strong>This product requires ring size</strong>
+                                                </label>
+                                            </div>
+                                            <small class="form-text text-muted">Check this if distributors must select a ring size when ordering this product</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-muted small mb-3">Available ring sizes are managed globally and will be available for selection when this option is enabled.</p>
+                                </div>
+                            </div>
+
                     <div class="d-flex justify-content-between">
                         <a href="{{ route('products.index') }}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Back to List
@@ -199,9 +248,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const customSubCategoryDiv = document.getElementById('customSubCategoryDiv');
     const customSubCategoryInput = document.getElementById('custom_sub_category');
     const fontsSection = document.getElementById('fontsSection');
+    const stonesSection = document.getElementById('stonesSection');
+    const ringSizeSection = document.getElementById('ringSizeSection');
     const localPricingContainer = document.getElementById('localPricingContainer');
     const internationalPricingContainer = document.getElementById('internationalPricingContainer');
     const metalCheckboxes = document.querySelectorAll('.metal-checkbox');
+    const stoneCheckboxes = document.querySelectorAll('.stone-checkbox');
+    const requiresStonesCheckbox = document.getElementById('requires_stones');
+    const requiresRingSizeCheckbox = document.getElementById('requires_ring_size');
     
     const metals = @json($metals);
 
@@ -319,6 +373,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Handle stones requirement change
+    requiresStonesCheckbox.addEventListener('change', function() {
+        const isChecked = this.checked;
+        stoneCheckboxes.forEach(checkbox => {
+            checkbox.disabled = !isChecked;
+            if (!isChecked) {
+                checkbox.checked = false;
+            }
+        });
+    });
+
+    // Handle ring size requirement change
+    requiresRingSizeCheckbox.addEventListener('change', function() {
+        // No additional logic needed for ring size as it's just a boolean flag
+    });
+
     // Set initial state
     if (categorySelect.value) {
         categorySelect.dispatchEvent(new Event('change'));
@@ -330,6 +400,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize font requirement
     fontRequirementSelect.dispatchEvent(new Event('change'));
+    
+    // Initialize stones and ring size requirements
+    requiresStonesCheckbox.dispatchEvent(new Event('change'));
 });
 </script>
 @endpush

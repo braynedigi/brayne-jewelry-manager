@@ -1,34 +1,35 @@
 version: '3.8'
-
 services:
-  app:
-    image: php:8.2-apache
-    ports:
-      - "80:80"
-    volumes:
-      - .:/var/www/html
-    working_dir: /var/www/html
-    depends_on:
-      - mysql
-    environment:
-      - APACHE_DOCUMENT_ROOT=/var/www/html/public
-    command: >
-      sh -c "a2enmod rewrite &&
-             sed -ri -e 's!/var/www/html!$${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf &&
-             sed -ri -e 's!/var/www/!$${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf &&
-             apache2-foreground"
-
-  mysql:
-    image: mysql:8.0
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: jewelry_new
-      MYSQL_USER: sail
-      MYSQL_PASSWORD: password
-    volumes:
-      - mysql_data:/var/lib/mysql
-
+    app:
+        image: 'php:8.2-apache'
+        ports:
+            - '80:80'
+        volumes:
+            - '.:/var/www/html'
+        working_dir: /var/www/html
+        depends_on:
+            - mysql
+        environment:
+            - APACHE_DOCUMENT_ROOT=/var/www/html/public
+            - DB_CONNECTION=mysql
+            - DB_HOST=mysql
+            - DB_PORT=3306
+            - DB_DATABASE=jewelry_new
+            - DB_USERNAME=sail
+            - DB_PASSWORD=password
+        command: "sh -c \"a2enmod rewrite &&\n       sed -ri -e 's!/var/www/html!$${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf &&\n       sed -ri -e 's!/var/www/!$${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf &&\n       apache2-foreground\"\n"
+    mysql:
+        image: 'mysql:8.0'
+        ports:
+            - '3306:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: password
+            MYSQL_DATABASE: jewelry_new
+            MYSQL_USER: sail
+            MYSQL_PASSWORD: password
+        volumes:
+            - 'mysql_data:/var/lib/mysql'
 volumes:
-  mysql_data:
+    mysql_data: null
+    sail-mysql:
+        driver: local

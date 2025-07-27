@@ -22,8 +22,8 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-4 text-center">
-                        @if($user->logo)
-                            <img src="{{ asset('storage/' . $user->logo) }}" 
+                        @if($user->hasLogo())
+                            <img src="{{ $user->getLogoUrl() }}" 
                                  alt="{{ $user->name }}" 
                                  class="img-fluid rounded shadow-sm mb-3" 
                                  style="max-height: 200px; object-fit: contain;">

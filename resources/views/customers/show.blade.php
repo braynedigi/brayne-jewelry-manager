@@ -87,8 +87,8 @@
                                     <td>
                                         @if($customer->distributor)
                                             <div class="d-flex align-items-center">
-                                                @if($customer->distributor->user->logo)
-                                                    <img src="{{ asset('storage/' . $customer->distributor->user->logo) }}" 
+                                                @if($customer->distributor->user->hasLogo())
+                                                    <img src="{{ $customer->distributor->user->getLogoUrl() }}" 
                                                          alt="Logo" class="rounded-circle me-2" 
                                                          style="width: 40px; height: 40px; object-fit: cover;">
                                                 @endif

@@ -12,7 +12,8 @@ class Product extends Model
 
     protected $fillable = [
         'name', 'image', 'sku', 'category', 'sub_category', 'custom_sub_category',
-        'metals', 'local_pricing', 'international_pricing', 'fonts', 'font_requirement', 'is_active',
+        'metals', 'local_pricing', 'international_pricing', 'fonts', 'font_requirement', 
+        'stones', 'requires_stones', 'requires_ring_size', 'is_active',
     ];
 
     protected $casts = [
@@ -22,12 +23,15 @@ class Product extends Model
         'international_pricing' => 'array',
         'fonts' => 'array',
         'font_requirement' => 'integer',
+        'stones' => 'array',
+        'requires_stones' => 'boolean',
+        'requires_ring_size' => 'boolean',
     ];
 
     public function orders(): BelongsToMany
     {
         return $this->belongsToMany(Order::class, 'order_product')
-                    ->withPivot('quantity', 'price', 'metal', 'font')
+                    ->withPivot('quantity', 'price', 'metal', 'font', 'names', 'stones', 'ring_size')
                     ->withTimestamps();
     }
 
@@ -155,6 +159,26 @@ class Product extends Model
     public function getAvailableFonts(): array
     {
         return \App\Models\ProductFont::active()->ordered()->pluck('name')->toArray();
+    }
+
+    public function getAvailableStones(): array
+    {
+        return \App\Models\ProductStone::active()->ordered()->pluck('name')->toArray();
+    }
+
+    public function getAvailableRingSizes(): array
+    {
+        return \App\Models\RingSize::active()->ordered()->pluck('size')->toArray();
+    }
+
+    public function hasStones(): bool
+    {
+        return $this->requires_stones && !empty($this->stones);
+    }
+
+    public function hasRingSize(): bool
+    {
+        return $this->requires_ring_size;
     }
 
     /**

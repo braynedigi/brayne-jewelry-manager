@@ -264,6 +264,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="form-control-plaintext product-fonts">-</div>
                     </div>
                     <div class="col-md-2">
+                        <label class="form-label">Names</label>
+                        <div class="form-control-plaintext product-name">-</div>
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label">Price</label>
                         <div class="form-control-plaintext product-price">$0.00</div>
                     </div>
@@ -283,6 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const productSelect = productDiv.querySelector('.product-select');
         const metalSelect = productDiv.querySelector('.product-metal');
         const fontsDiv = productDiv.querySelector('.product-fonts');
+        const nameDiv = productDiv.querySelector('.product-name');
         const quantityInput = productDiv.querySelector('.product-quantity');
         const removeBtn = productDiv.querySelector('.remove-product');
 
@@ -314,6 +319,23 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 metalSelect.value = existingProduct.metal;
                 metalSelect.dispatchEvent(new Event('change'));
+                
+                // Display names if they exist
+                if (existingProduct.names && existingProduct.names.length > 0) {
+                    const namesHtml = existingProduct.names.map((name, index) => 
+                        `<span class="badge bg-success me-1 fs-6 px-2 py-1">
+                            <i class="fas fa-font me-1"></i>${name}
+                        </span>`
+                    ).join('');
+                    nameDiv.innerHTML = `
+                        <div class="d-flex align-items-center flex-wrap">
+                            <i class="fas fa-signature text-success me-2 fs-5"></i>
+                            ${namesHtml}
+                        </div>
+                    `;
+                } else {
+                    nameDiv.innerHTML = '<span class="text-muted"><i class="fas fa-minus me-1"></i>No names</span>';
+                }
             }, 100);
         }
     }
@@ -425,11 +447,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Load existing products
     @foreach($order->products as $product)
+        @php
+            $names = $product->pivot->names;
+            if (is_string($names)) {
+                $names = json_decode($names, true);
+            }
+            $names = is_array($names) ? $names : [];
+        @endphp
         addProduct({
             product_id: {{ $product->id }},
             quantity: {{ $product->pivot->quantity }},
             metal: '{{ $product->pivot->metal }}',
-            font: '{{ $product->pivot->font ?? "" }}'
+            font: '{{ $product->pivot->font ?? "" }}',
+            names: @json($names)
         });
     @endforeach
 

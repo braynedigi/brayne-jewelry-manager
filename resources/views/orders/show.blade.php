@@ -87,12 +87,12 @@
                                     <td>
                                         @if($order->distributor)
                                             <div class="d-flex align-items-center">
-                                                @if($order->distributor->user->logo)
-                                                    <img src="{{ asset('storage/' . $order->distributor->user->logo) }}" 
-                                                         alt="{{ $order->distributor->user->name }}" 
-                                                         class="img-thumbnail me-2" 
-                                                         style="width: 40px; height: 40px; object-fit: cover;">
-                                                @else
+                                                                                        @if($order->distributor->user->hasLogo())
+                                            <img src="{{ $order->distributor->user->getLogoUrl() }}" 
+                                                 alt="{{ $order->distributor->user->name }}" 
+                                                 class="img-thumbnail me-2" 
+                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                        @else
                                                     <div class="bg-light d-flex align-items-center justify-content-center me-2" 
                                                          style="width: 40px; height: 40px;">
                                                         <i class="fas fa-user text-muted"></i>
@@ -158,7 +158,10 @@
                             <tr>
                                 <th>Product</th>
                                 <th>Metal</th>
+                                <th>Stones</th>
+                                <th>Ring Size</th>
                                 <th>Font</th>
+                                <th>Names</th>
                                 <th>Quantity</th>
                                 @if(!auth()->user()->isFactory())
                                     <th>Unit Price</th>
@@ -192,12 +195,66 @@
                                         <span class="badge bg-secondary">{{ $product->pivot->metal }}</span>
                                     </td>
                                     <td>
+                                        @if($product->pivot->stones && trim($product->pivot->stones))
+                                            @php
+                                                $stones = is_array($product->pivot->stones) ? $product->pivot->stones : explode(', ', $product->pivot->stones);
+                                                $stones = array_filter(array_map('trim', $stones));
+                                            @endphp
+                                            @if(count($stones) > 0)
+                                                @foreach($stones as $stone)
+                                                    <span class="badge bg-warning me-1">
+                                                        <i class="fas fa-gem me-1"></i>{{ $stone }}
+                                                    </span>
+                                                @endforeach
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($product->pivot->ring_size && trim($product->pivot->ring_size))
+                                            <span class="badge bg-dark">
+                                                <i class="fas fa-circle me-1"></i>{{ trim($product->pivot->ring_size) }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
                                         @if($product->pivot->font)
                                             @php
-                                                $fonts = explode(', ', $product->pivot->font);
+                                                $fonts = is_array($product->pivot->font) ? $product->pivot->font : explode(', ', $product->pivot->font);
                                             @endphp
                                             @foreach($fonts as $font)
-                                                <span class="badge bg-info me-1">{{ trim($font) }}</span>
+                                                @if(trim($font))
+                                                    <span class="badge bg-info me-1">{{ trim($font) }}</span>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $names = is_array($product->pivot->names) ? $product->pivot->names : json_decode($product->pivot->names, true);
+                                            $fonts = is_array($product->pivot->font) ? $product->pivot->font : explode(', ', $product->pivot->font);
+                                        @endphp
+                                        @if($names && is_array($names) && count($names) > 0)
+                                            @foreach($names as $index => $name)
+                                                @if($name)
+                                                    <div class="mb-1">
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-signature me-1"></i>{{ $name }}
+                                                        </span>
+                                                        @if(isset($fonts[$index]) && trim($fonts[$index]))
+                                                            <span class="badge bg-info ms-1">
+                                                                <i class="fas fa-font me-1"></i>{{ trim($fonts[$index]) }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                @endif
                                             @endforeach
                                         @else
                                             <span class="text-muted">-</span>
@@ -205,8 +262,8 @@
                                     </td>
                                     <td>{{ $product->pivot->quantity }}</td>
                                     @if(!auth()->user()->isFactory())
-                                        <td>{{ $product->currency === 'PHP' ? '₱' : '$' }}{{ number_format($product->pivot->price, 2) }}</td>
-                                        <td>{{ $product->currency === 'PHP' ? '₱' : '$' }}{{ number_format($product->pivot->price * $product->pivot->quantity, 2) }}</td>
+                                                                <td>{{ $order->distributor->is_international ? '$' : '₱' }}{{ number_format($product->pivot->price, 2) }}</td>
+                        <td>{{ $order->distributor->is_international ? '$' : '₱' }}{{ number_format($product->pivot->price * $product->pivot->quantity, 2) }}</td>
                                     @endif
                                 </tr>
                             @endforeach

@@ -55,15 +55,20 @@
                                 data-role="{{ strtolower($user->role) }}"
                                 data-company="{{ $user->role === 'distributor' && $user->distributor ? strtolower($user->distributor->company_name) : '' }}">
                                 <td>
-                                    @if($user->logo)
-                                        <img src="{{ asset('storage/' . $user->logo) }}" 
-                                             alt="{{ $user->name }}" 
-                                             class="img-thumbnail" 
-                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                    @if($user->hasLogo())
+                                        <div class="image-container" style="width: 40px; height: 40px;">
+                                            <img src="{{ $user->getLogoUrl() }}" 
+                                                 alt="{{ $user->name }}" 
+                                                 class="user-logo" 
+                                                 style="width: 100%; height: 100%; object-fit: cover;">
+                                            <div class="image-overlay">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        </div>
                                     @else
-                                        <div class="bg-light d-flex align-items-center justify-content-center" 
+                                        <div class="image-placeholder" 
                                              style="width: 40px; height: 40px;">
-                                            <i class="fas fa-user text-muted"></i>
+                                            <i class="fas fa-user"></i>
                                         </div>
                                     @endif
                                 </td>

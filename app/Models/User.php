@@ -87,4 +87,29 @@ class User extends Authenticatable
     {
         return $this->hasMany(Order::class, 'distributor_id');
     }
+
+    /**
+     * Get the logo URL for the user
+     */
+    public function getLogoUrl(): ?string
+    {
+        if (!$this->logo) {
+            return null;
+        }
+
+        // Check if the logo exists in storage
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($this->logo)) {
+            return null;
+        }
+
+        return asset('storage/' . $this->logo);
+    }
+
+    /**
+     * Check if the user has a valid logo
+     */
+    public function hasLogo(): bool
+    {
+        return $this->logo && \Illuminate\Support\Facades\Storage::disk('public')->exists($this->logo);
+    }
 }

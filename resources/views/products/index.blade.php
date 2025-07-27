@@ -58,14 +58,19 @@
                                 data-subcategory="{{ strtolower($product->sub_category) }}">
                                 <td>
                                     @if($product->hasImage())
-                                        <img src="{{ $product->getImageUrl() }}" 
-                                             alt="{{ $product->name }}" 
-                                             class="img-thumbnail" 
-                                             style="width: 50px; height: 50px; object-fit: cover;">
+                                        <div class="image-container" style="width: 50px; height: 50px;">
+                                            <img src="{{ $product->getImageUrl() }}" 
+                                                 alt="{{ $product->name }}" 
+                                                 class="product-image" 
+                                                 style="width: 100%; height: 100%; object-fit: cover;">
+                                            <div class="image-overlay">
+                                                <i class="fas fa-eye"></i>
+                                            </div>
+                                        </div>
                                     @else
-                                        <div class="bg-light d-flex align-items-center justify-content-center" 
+                                        <div class="image-placeholder" 
                                              style="width: 50px; height: 50px;">
-                                            <i class="fas fa-image text-muted"></i>
+                                            <i class="fas fa-image"></i>
                                         </div>
                                     @endif
                                 </td>
