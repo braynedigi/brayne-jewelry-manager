@@ -1,210 +1,260 @@
 # 🏪 Brayne Jewelry Manager
 
-A comprehensive Laravel-based jewelry management system with role-based access control for distributors, factory workers, and administrators. This system streamlines the entire jewelry manufacturing process from order creation to delivery.
+A comprehensive, production-ready jewelry management system built with Laravel, featuring advanced order management, real-time updates, and dynamic color customization.
 
 ## ✨ Features
 
-### 🎭 User Roles & Access Control
-- **👑 Admin**: Full system management and oversight
-- **🏪 Distributor**: Customer and order management
-- **🏭 Factory**: Production workflow management
+### 🎨 **Dynamic Color Customization**
+- **Admin-controlled theming** with live preview
+- **Color presets**: Default, Green, Orange, Red, Purple, Dark themes
+- **Comprehensive UI theming**: Buttons, sidebar, cards, badges, links
+- **Real-time color updates** across the entire application
 
-### 🏪 Distributor Dashboard
-- ✅ Add/view/update/delete customers
-- ✅ Place new orders with product selection
-- ✅ View order history and real-time status
-- ✅ Update payment status (50%/fully paid)
-- ✅ Manage distributor profile and settings
-- ✅ Order templates for quick reordering
-- ✅ Advanced search and filtering
+### 👥 **Multi-Role User System**
+- **Admin Users**: Full system access, color customization, order management
+- **Factory Users**: Production workflow, status updates, timeline management
+- **Distributor Users**: Order creation, customer management, status tracking
 
-### 🏭 Factory Dashboard
-- ✅ View all orders (without financial information)
-- ✅ Update order status through production stages
-- ✅ Track production progress and timelines
-- ✅ Manage workload and priorities
-- ✅ Real-time status updates
+### 📋 **Order Management**
+- **Complete order lifecycle** from creation to delivery
+- **Real-time status updates** with notifications
+- **Priority management** (Low, Normal, Urgent)
+- **Timeline tracking** with estimated completion dates
+- **Production workflow** with detailed status transitions
 
-### 👑 Admin Dashboard
-- ✅ Manage all users, products, and couriers
-- ✅ View comprehensive system statistics
-- ✅ Order approval and management
-- ✅ System settings and configuration
-- ✅ Real-time monitoring and analytics
+### 🏭 **Factory Dashboard**
+- **Real-time production queue** with drag-and-drop functionality
+- **Workload management** with capacity planning
+- **Status tracking** for all production stages
+- **Priority-based ordering** system
 
-## 🚀 Key Features
+### 📊 **Advanced Features**
+- **Real-time notifications** using Laravel Broadcasting
+- **Email notifications** with customizable templates
+- **Customer management** with detailed profiles
+- **Product catalog** with categories and pricing
+- **Order templates** for quick order creation
+- **Import/Export** functionality for data management
 
-### 📱 Real-Time Updates
-- **WebSocket Integration**: Live notifications for order status changes
-- **Live Dashboard**: Updates without page refresh
-- **Status Change Alerts**: Immediate popup notifications
-- **Role-based Channels**: Targeted notifications for different user types
+## 🚀 Quick Start
 
-### 📋 Order Management
-- **Order Templates**: Save common order configurations
-- **Quick Reorder**: One-click reorder from previous orders
-- **Advanced Search**: Filter by status, date, customer, amount, etc.
-- **Order History**: Complete audit trail with timestamps
-- **Production Tracking**: Detailed timeline management
-
-### 🎨 Modern UI/UX
-- **Responsive Design**: Works on all devices
-- **Bootstrap 5**: Modern, clean interface
-- **Custom Branding**: Configurable logos and colors
-- **Enhanced Notifications**: Multiple notification styles
-- **Accessibility**: WCAG compliant design
-
-## 🛠️ Technology Stack
-
-- **Backend**: Laravel 11 (PHP 8.2+)
-- **Frontend**: Bootstrap 5, JavaScript, AJAX
-- **Database**: MySQL/PostgreSQL/SQLite
-- **Real-time**: Pusher WebSocket integration
-- **Authentication**: Laravel's built-in auth system
-- **File Storage**: Laravel Storage with public disk
-
-## 📋 Requirements
-
-- PHP 8.2 or higher
+### Prerequisites
+- PHP 8.1 or higher
 - Composer
-- Node.js & NPM (for frontend assets)
-- MySQL/PostgreSQL/SQLite
-- Web server (Apache/Nginx)
+- MySQL 5.7 or higher
+- Node.js & NPM (for asset compilation)
 
-## 🚀 Installation
+### Installation
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/yourusername/jewelry-manager.git
-cd jewelry-manager
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/braynedigi/brayne-jewelry-manager.git
+   cd brayne-jewelry-manager
+   ```
 
-### 2. Install Dependencies
-```bash
-composer install
-npm install
-```
+2. **Install dependencies**
+   ```bash
+   composer install
+   npm install
+   ```
 
-### 3. Environment Setup
-```bash
-cp .env.example .env
-php artisan key:generate
-```
+3. **Environment setup**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-### 4. Configure Database
-Edit `.env` file with your database credentials:
-```env
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=jewelry_manager
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
-```
+4. **Database setup**
+   ```bash
+   php artisan migrate
+   php artisan db:seed
+   php artisan db:seed --class=ColorSettingsSeeder
+   ```
 
-### 5. Run Migrations and Seeders
-```bash
-php artisan migrate:fresh --seed
-```
+5. **Asset compilation**
+   ```bash
+   npm run dev
+   ```
 
-### 6. Create Storage Link
-```bash
-php artisan storage:link
-```
+6. **Storage setup**
+   ```bash
+   php artisan storage:link
+   ```
 
-### 7. Build Frontend Assets
-```bash
-npm run build
-```
+7. **Start the server**
+   ```bash
+   php artisan serve
+   ```
 
-### 8. Start Development Server
-```bash
-php artisan serve
-```
+## 🎨 Color Customization
 
-## 🔐 Default Login Credentials
+### Admin Access
+Navigate to **Settings → Appearance** to customize the application theme.
 
-### Admin
-- **Email**: `admin@jewelry.com`
-- **Password**: `password`
+### Available Customizations
+- **Button Colors**: Primary, Secondary, Success, Warning, Danger, Info
+- **Sidebar Colors**: Background, text, active states
+- **Card Colors**: Background, headers, borders
+- **Status Badges**: Pending, approved, production, completed
+- **UI Elements**: Links, borders, shadows, form controls
 
-### Distributor 1
-- **Email**: `distributor1@jewelry.com`
-- **Password**: `password`
+### Color Presets
+- **Default Blue**: Professional blue theme
+- **Green Theme**: Nature-inspired green palette
+- **Orange Theme**: Warm orange accents
+- **Red Theme**: Bold red highlights
+- **Purple Theme**: Elegant purple tones
+- **Dark Theme**: Modern dark interface
 
-### Distributor 2
-- **Email**: `distributor2@jewelry.com`
-- **Password**: `password`
+## 📱 User Roles & Permissions
 
-### Factory
-- **Email**: `factory@jewelry.com`
-- **Password**: `password`
+### Admin Users
+- Full system access and configuration
+- Color customization and theming
+- User management and role assignment
+- System settings and email configuration
+- Order approval and management
 
-## 📊 Order Status Flow
+### Factory Users
+- Production workflow management
+- Order status updates (In Production → Finishing → Ready for Delivery → Delivered to Brayne)
+- Timeline and priority management
+- Production notes and tracking
+- Real-time dashboard updates
 
-1. **Pending Payment** - Order created by distributor
-2. **Approved** - Order confirmed by admin
-3. **In Production** - Order being manufactured
-4. **Finishing** - Final touches and quality check
-5. **Ready for Delivery** - Order completed and ready
-6. **Delivered to Brayne** - Order received by Brayne Jewelry
-7. **Delivered to Client** - Order delivered to customer
-8. **Cancelled** - Order cancelled
+### Distributor Users
+- Customer management
+- Order creation and templates
+- Order status tracking
+- Customer communication
+- Profile management
 
-## 💳 Payment Status
+## 🔧 Technical Stack
 
-- **Unpaid** - No payment received
-- **Partially Paid** - 50% payment received
-- **Fully Paid** - Complete payment received
-
-## 🔧 Configuration
-
-### Real-Time Features
-For real-time notifications, configure Pusher in your `.env`:
-```env
-BROADCAST_DRIVER=pusher
-PUSHER_APP_ID=your_app_id
-PUSHER_APP_KEY=your_app_key
-PUSHER_APP_SECRET=your_app_secret
-PUSHER_APP_CLUSTER=mt1
-```
-
-### File Storage
-Configure file storage for logos and images:
-```env
-FILESYSTEM_DISK=public
-```
+- **Backend**: Laravel 10.x
+- **Frontend**: Bootstrap 5, jQuery, Alpine.js
+- **Database**: MySQL
+- **Real-time**: Laravel Broadcasting (Pusher)
+- **Email**: Laravel Mail with customizable templates
+- **Caching**: Laravel Cache with Redis support
+- **File Storage**: Laravel Storage with local/cloud support
 
 ## 📁 Project Structure
 
 ```
 jewelry-manager/
 ├── app/
-│   ├── Console/Commands/     # Artisan commands
-│   ├── Http/Controllers/     # Application controllers
-│   ├── Models/              # Eloquent models
-│   ├── Services/            # Business logic services
-│   └── Providers/           # Service providers
+│   ├── Console/Commands/     # Custom Artisan commands
+│   ├── Events/              # Event classes for real-time updates
+│   ├── Http/Controllers/    # Application controllers
+│   ├── Mail/               # Email templates and classes
+│   ├── Models/             # Eloquent models
+│   └── Services/           # Business logic services
 ├── database/
-│   ├── migrations/          # Database migrations
-│   └── seeders/            # Database seeders
+│   ├── migrations/         # Database migrations
+│   └── seeders/           # Database seeders
+├── public/
+│   └── css/               # Generated CSS files
 ├── resources/
-│   ├── views/              # Blade templates
-│   ├── css/               # Stylesheets
-│   └── js/                # JavaScript files
-├── routes/                 # Application routes
-├── storage/               # File storage
-└── public/                # Public assets
+│   └── views/             # Blade templates
+└── routes/                # Application routes
 ```
 
-## 🧪 Testing
+## 🛠️ Development
 
-Run the test suite:
+### Key Commands
 ```bash
+# Generate CSS from settings
+php artisan tinker --execute="app('App\Http\Controllers\SettingsController')->generateDynamicCSS();"
+
+# Clear all caches
+php artisan optimize:clear
+
+# Run tests
 php artisan test
+
+# Export database
+php artisan export:database
 ```
 
-## 📝 Contributing
+### Environment Variables
+```env
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=jewelry_manager
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Broadcasting (for real-time features)
+BROADCAST_DRIVER=pusher
+PUSHER_APP_ID=your_app_id
+PUSHER_APP_KEY=your_app_key
+PUSHER_APP_SECRET=your_app_secret
+PUSHER_HOST=
+PUSHER_PORT=443
+PUSHER_SCHEME=https
+PUSHER_APP_CLUSTER=mt1
+
+# Mail Configuration
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@jewelrymanager.com
+MAIL_FROM_NAME="Jewelry Manager"
+```
+
+## 📊 Database Schema
+
+### Core Tables
+- **users**: User accounts and authentication
+- **orders**: Order management and tracking
+- **customers**: Customer information and profiles
+- **products**: Product catalog and pricing
+- **settings**: Application configuration and theming
+- **notifications**: Real-time notification system
+
+### Relationships
+- Orders belong to Distributors and Customers
+- Orders have many Products (many-to-many)
+- Users have specific roles (Admin, Factory, Distributor)
+- Settings control application appearance and behavior
+
+## 🔒 Security Features
+
+- **Role-based access control** (RBAC)
+- **CSRF protection** on all forms
+- **Input validation** and sanitization
+- **SQL injection prevention** with Eloquent ORM
+- **XSS protection** with Blade templating
+- **Secure file uploads** with validation
+
+## 🚀 Deployment
+
+### Production Checklist
+- [ ] Set `APP_ENV=production` in `.env`
+- [ ] Configure production database
+- [ ] Set up SSL certificate
+- [ ] Configure email settings
+- [ ] Set up file storage (local or cloud)
+- [ ] Configure caching (Redis recommended)
+- [ ] Set up monitoring and logging
+- [ ] Configure backups
+
+### Performance Optimization
+```bash
+# Optimize for production
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan optimize
+```
+
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -214,31 +264,15 @@ php artisan test
 
 ## 📄 License
 
-This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is proprietary software developed for Brayne Digital. All rights reserved.
 
-## 🤝 Support
+## 🆘 Support
 
 For support and questions:
-- Create an issue on GitHub
-- Email: support@braynedigital.com
-- Documentation: [Wiki](https://github.com/yourusername/jewelry-manager/wiki)
-
-## 🔄 Changelog
-
-### Version 1.0.0
-- Initial release
-- Role-based access control
-- Order management system
-- Real-time notifications
-- Modern UI/UX design
-
-## 🙏 Acknowledgments
-
-- Laravel team for the amazing framework
-- Bootstrap team for the UI components
-- Pusher for real-time functionality
-- All contributors and testers
+- **Email**: support@braynedigital.com
+- **Documentation**: [Internal Wiki]
+- **Issues**: [GitHub Issues](https://github.com/braynedigi/brayne-jewelry-manager/issues)
 
 ---
 
-**Made with ❤️ for Brayne Jewelry**
+**Built with ❤️ by Brayne Digital Team**
