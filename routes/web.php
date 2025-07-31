@@ -146,6 +146,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/settings', [SettingsController::class, 'update'])->name('admin.settings.update');
     Route::post('/settings/test-email', [SettingsController::class, 'testEmail'])->name('admin.settings.test-email');
     Route::get('/settings/refresh', [SettingsController::class, 'refresh'])->name('admin.settings.refresh');
+    Route::post('/settings/regenerate-css', [SettingsController::class, 'regenerateCSS'])->name('admin.settings.regenerate-css');
     
     // Admin courier management routes
     Route::post('/couriers', [SettingsController::class, 'storeCourier'])->name('admin.couriers.store');
@@ -236,3 +237,51 @@ Route::get('/api/notifications/count', function () {
     $count = \App\Services\NotificationService::getUnreadCount(auth()->id());
     return response()->json(['count' => $count]);
 })->name('api.notifications.count');
+
+// API route for order status updates
+Route::get('/api/orders/status-updates', function () {
+    if (!auth()->check()) {
+        return response()->json(['updates' => []]);
+    }
+    
+    $user = auth()->user();
+    $updates = [];
+    
+    // Get since parameter for more efficient updates
+    $since = request('since');
+    $query = \App\Models\OrderStatusHistory::with(['order.customer', 'order.distributor.user', 'changedByUser']);
+    
+    if ($since) {
+        $sinceDate = \Carbon\Carbon::createFromTimestamp($since / 1000);
+        $query->where('created_at', '>=', $sinceDate);
+    } else {
+        // Default to last 5 minutes if no since parameter
+        $query->where('created_at', '>=', now()->subMinutes(5));
+    }
+    
+    $recentChanges = $query->orderBy('created_at', 'desc')->get();
+    
+    foreach ($recentChanges as $change) {
+        // Check if user has access to this order
+        if ($user->isAdmin() || 
+            ($user->isFactory() && in_array($change->order->order_status, ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'])) ||
+            ($user->isDistributor() && $change->order->distributor_id == $user->distributor_id)) {
+            
+            $updates[] = [
+                'order_id' => $change->order->id,
+                'order_number' => $change->order->order_number,
+                'previous_status' => $change->order->order_status,
+                'new_status' => $change->status,
+                'status_label' => $change->order->getOrderStatusLabel(),
+                'changed_by' => $change->changedByUser->name,
+                'changed_by_role' => $change->changedByUser->role,
+                'notes' => $change->notes,
+                'timestamp' => $change->created_at->toISOString(),
+                'customer_name' => $change->order->customer ? $change->order->customer->name : 'Unknown',
+                'distributor_name' => $change->order->distributor ? $change->order->distributor->user->name : 'Unknown',
+            ];
+        }
+    }
+    
+    return response()->json(['updates' => $updates]);
+})->name('api.orders.status-updates');

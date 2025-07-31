@@ -27,6 +27,9 @@ class OrderController extends Controller
         // Apply role-based filtering
         if ($user->isDistributor()) {
             $query->where('distributor_id', $user->distributor->id);
+        } elseif ($user->isFactory()) {
+            // Factory users can only see orders in their workflow
+            $query->whereIn('order_status', ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne']);
         }
 
         // Advanced search and filtering
@@ -130,8 +133,17 @@ class OrderController extends Controller
      */
     private function getFilterOptions($user): array
     {
-        $options = [
-            'statuses' => [
+        // Set statuses based on user role
+        if ($user->isFactory()) {
+            $statuses = [
+                'approved' => 'Approved',
+                'in_production' => 'In Production',
+                'finishing' => 'Finishing',
+                'ready_for_delivery' => 'Ready for Delivery',
+                'delivered_to_brayne' => 'Delivered to Brayne',
+            ];
+        } else {
+            $statuses = [
                 'pending_payment' => 'Pending Payment',
                 'approved' => 'Approved',
                 'in_production' => 'In Production',
@@ -140,7 +152,11 @@ class OrderController extends Controller
                 'delivered_to_brayne' => 'Delivered to Brayne',
                 'delivered_to_client' => 'Delivered to Client',
                 'cancelled' => 'Cancelled',
-            ],
+            ];
+        }
+
+        $options = [
+            'statuses' => $statuses,
             'priorities' => [
                 'low' => 'Low',
                 'normal' => 'Normal',
@@ -551,9 +567,6 @@ class OrderController extends Controller
             abort(403, 'You do not have permission to update this order status.');
         }
 
-        // Get available statuses for current user
-        $availableStatuses = $order->getNextAvailableStatuses($user);
-        
         // Validate status based on user role and current status
         if ($user->isAdmin()) {
             $validated = $request->validate([
@@ -562,16 +575,20 @@ class OrderController extends Controller
             ]);
         } elseif ($user->isFactory()) {
             $validated = $request->validate([
-                'order_status' => 'required|in:approved,in_production,finishing,ready_for_delivery',
+                'order_status' => 'required|in:approved,in_production,finishing,ready_for_delivery,delivered_to_brayne',
                 'notes' => 'nullable|string|max:1000',
             ]);
+            
+            // Factory validation: ensure the new status comes after the current status in the workflow
+            $workflowOrder = ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'];
+            $currentIndex = array_search($order->order_status, $workflowOrder);
+            $newIndex = array_search($validated['order_status'], $workflowOrder);
+            
+            if ($currentIndex === false || $newIndex === false || $newIndex <= $currentIndex) {
+                return back()->withErrors(['order_status' => 'Invalid status transition for current order state.']);
+            }
         } else {
             abort(403, 'You do not have permission to update order status.');
-        }
-
-        // Additional validation: ensure the new status is in the available statuses
-        if (!array_key_exists($validated['order_status'], $availableStatuses)) {
-            return back()->withErrors(['order_status' => 'Invalid status transition for current order state.']);
         }
 
         try {

@@ -335,7 +335,7 @@
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                         @endif
-                                        @if(auth()->user()->isAdmin() || auth()->user()->isFactory())
+                                        @if(auth()->user()->isAdmin() || (auth()->user()->isFactory() && $order->canUpdateStatus(auth()->user())))
                                             <button type="button" class="btn btn-sm btn-outline-info" 
                                                     onclick="openStatusModal({{ $order->id }}, '{{ $order->order_status }}')" title="Update Status">
                                                 <i class="fas fa-sync-alt"></i>
@@ -406,13 +406,7 @@
                     <div class="mb-3">
                         <label for="order_status" class="form-label">New Status</label>
                         <select class="form-select" id="order_status" name="order_status" required>
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="in_production">In Production</option>
-                            <option value="ready_for_delivery">Ready for Delivery</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
+                            <!-- Options will be populated dynamically by JavaScript -->
                         </select>
                     </div>
                     <div class="mb-3">
@@ -486,11 +480,78 @@ function openStatusModal(orderId, currentStatus) {
     const form = document.getElementById('statusForm');
     const statusSelect = document.getElementById('order_status');
     
-    form.action = `/orders/${orderId}/status`;
-    statusSelect.value = currentStatus;
+    // Set the correct route based on user role
+    const userRole = '{{ auth()->user()->role }}';
+    if (userRole === 'factory') {
+        form.action = `/factory/orders/${orderId}/status`;
+    } else {
+        form.action = `/orders/${orderId}/status`;
+    }
+    
+    // Clear existing options
+    statusSelect.innerHTML = '';
+    
+    // Get available statuses based on current status and user role
+    const availableStatuses = getAvailableStatuses(currentStatus);
+    
+    // Populate options
+    availableStatuses.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status.value;
+        option.textContent = status.label;
+        statusSelect.appendChild(option);
+    });
+    
+    // Set current status as selected if it's still available
+    if (availableStatuses.some(status => status.value === currentStatus)) {
+        statusSelect.value = currentStatus;
+    }
     
     modal.show();
 }
+
+function getAvailableStatuses(currentStatus) {
+    const userRole = '{{ auth()->user()->role }}';
+    
+    if (userRole === 'admin') {
+        // Admin can see and update to ALL statuses
+        const allStatuses = [
+            { value: 'pending_payment', label: 'Pending 50% Payment' },
+            { value: 'approved', label: 'Approved' },
+            { value: 'in_production', label: 'In Production' },
+            { value: 'finishing', label: 'Finishing' },
+            { value: 'ready_for_delivery', label: 'Ready for Delivery' },
+            { value: 'delivered_to_brayne', label: 'Delivered to Brayne Jewelry' },
+            { value: 'delivered_to_client', label: 'Delivered to Client' },
+            { value: 'cancelled', label: 'Cancelled' }
+        ];
+        
+        // Filter out the current status
+        return allStatuses.filter(status => status.value !== currentStatus);
+    } else if (userRole === 'factory') {
+        // Factory can see all factory workflow statuses
+        const factoryStatuses = [
+            { value: 'approved', label: 'Approved' },
+            { value: 'in_production', label: 'In Production' },
+            { value: 'finishing', label: 'Finishing' },
+            { value: 'ready_for_delivery', label: 'Ready for Delivery' },
+            { value: 'delivered_to_brayne', label: 'Delivered to Brayne' }
+        ];
+        
+        // Filter out the current status and any statuses that come before it in the workflow
+        const workflowOrder = ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'];
+        const currentIndex = workflowOrder.indexOf(currentStatus);
+        
+        return factoryStatuses.filter(status => {
+            const statusIndex = workflowOrder.indexOf(status.value);
+            return statusIndex > currentIndex; // Only show statuses that come after the current status
+        });
+    }
+    
+    return [];
+}
+
+
 </script>
 @endpush
 @endsection 

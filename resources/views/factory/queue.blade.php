@@ -167,15 +167,6 @@
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             
-                                            @if($order->canUpdateStatus(auth()->user()))
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-outline-success"
-                                                        onclick="openStatusModal({{ $order->id }}, '{{ $order->order_status }}')"
-                                                        title="Update Status">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            @endif
-                                            
                                             <button type="button" 
                                                     class="btn btn-sm btn-outline-info"
                                                     onclick="openPriorityModal({{ $order->id }}, '{{ $order->priority }}')"

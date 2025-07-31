@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
@@ -25,7 +26,7 @@ class Setting extends Model
     {
         // Try to get from cache first
         $cacheKey = "setting_{$key}";
-        $cachedValue = \Cache::get($cacheKey);
+        $cachedValue = Cache::get($cacheKey);
         
         if ($cachedValue !== null) {
             return $cachedValue;
@@ -35,7 +36,7 @@ class Setting extends Model
         $value = $setting ? $setting->value : $default;
         
         // Cache the value for 1 hour
-        \Cache::put($cacheKey, $value, 3600);
+        Cache::put($cacheKey, $value, 3600);
         
         return $value;
     }
@@ -57,7 +58,7 @@ class Setting extends Model
         );
         
         // Clear cache for this setting
-        \Cache::forget("setting_{$key}");
+        Cache::forget("setting_{$key}");
         
         return $setting;
     }
@@ -103,8 +104,8 @@ class Setting extends Model
     {
         $settings = static::all();
         foreach ($settings as $setting) {
-            \Cache::forget("setting_{$setting->key}");
+            Cache::forget("setting_{$setting->key}");
         }
-        \Cache::forget('settings');
+        Cache::forget('settings');
     }
 }

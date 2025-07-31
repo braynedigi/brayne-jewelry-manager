@@ -13,7 +13,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <div class="stats-label">Total Orders</div>
-                    <div class="stats-number">{{ $queueOrders->count() + $inProductionOrders->count() + $finishingOrders->count() + $readyOrders->count() }}</div>
+                    <div class="stats-number">{{ $queueOrders->count() + $inProductionOrders->count() + $finishingOrders->count() + $readyOrders->count() + $deliveredOrders->count() }}</div>
                 </div>
                 <div class="stats-icon">
                     <i class="fas fa-clipboard-list"></i>
@@ -124,11 +124,11 @@
             <div class="card-header bg-warning text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-clock me-2"></i>Queue
-                    <span class="badge bg-light text-dark ms-2">{{ $queueOrders->count() }}</span>
+                    <span class="badge bg-light text-dark ms-2 approved-count">{{ $queueOrders->count() }}</span>
                 </h5>
             </div>
             <div class="card-body p-0">
-                <div class="production-column" style="max-height: 500px; overflow-y: auto;">
+                <div class="production-column queue-column" style="max-height: 500px; overflow-y: auto;">
                     @forelse($queueOrders as $order)
                         @include('factory.partials.order-card', ['order' => $order])
                     @empty
@@ -148,11 +148,11 @@
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-cogs me-2"></i>In Production
-                    <span class="badge bg-light text-dark ms-2">{{ $inProductionOrders->count() }}</span>
+                    <span class="badge bg-light text-dark ms-2 in-production-count">{{ $inProductionOrders->count() }}</span>
                 </h5>
             </div>
             <div class="card-body p-0">
-                <div class="production-column" style="max-height: 500px; overflow-y: auto;">
+                <div class="production-column in-production-column" style="max-height: 500px; overflow-y: auto;">
                     @forelse($inProductionOrders as $order)
                         @include('factory.partials.order-card', ['order' => $order])
                     @empty
@@ -172,11 +172,11 @@
             <div class="card-header bg-info text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-paint-brush me-2"></i>Finishing
-                    <span class="badge bg-light text-dark ms-2">{{ $finishingOrders->count() }}</span>
+                    <span class="badge bg-light text-dark ms-2 finishing-count">{{ $finishingOrders->count() }}</span>
                 </h5>
             </div>
             <div class="card-body p-0">
-                <div class="production-column" style="max-height: 500px; overflow-y: auto;">
+                <div class="production-column finishing-column" style="max-height: 500px; overflow-y: auto;">
                     @forelse($finishingOrders as $order)
                         @include('factory.partials.order-card', ['order' => $order])
                     @empty
@@ -196,17 +196,41 @@
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-check-circle me-2"></i>Ready
-                    <span class="badge bg-light text-dark ms-2">{{ $readyOrders->count() }}</span>
+                    <span class="badge bg-light text-dark ms-2 ready-count">{{ $readyOrders->count() }}</span>
                 </h5>
             </div>
             <div class="card-body p-0">
-                <div class="production-column" style="max-height: 500px; overflow-y: auto;">
+                <div class="production-column ready-column" style="max-height: 500px; overflow-y: auto;">
                     @forelse($readyOrders as $order)
                         @include('factory.partials.order-card', ['order' => $order])
                     @empty
                         <div class="text-center py-4">
                             <i class="fas fa-box fa-2x text-muted mb-2"></i>
                             <p class="text-muted mb-0">No orders ready</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delivered to Brayne -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-truck me-2"></i>Delivered to Brayne
+                    <span class="badge bg-light text-dark ms-2 delivered-brayne-count">{{ $deliveredOrders->count() }}</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="production-column delivered-column" style="max-height: 500px; overflow-y: auto;">
+                    @forelse($deliveredOrders as $order)
+                        @include('factory.partials.order-card', ['order' => $order])
+                    @empty
+                        <div class="text-center py-4">
+                            <i class="fas fa-truck fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">No orders delivered</p>
                         </div>
                     @endforelse
                 </div>
@@ -294,6 +318,37 @@
     </div>
 </div>
 @endif
+
+<!-- Priority Update Modal -->
+<div class="modal fade" id="priorityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Order Priority</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="priorityForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="priority" class="form-label">Priority Level</label>
+                        <select class="form-select" name="priority" required>
+                            <option value="low">Low</option>
+                            <option value="normal">Normal</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Priority</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('styles')

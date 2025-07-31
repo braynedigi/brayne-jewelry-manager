@@ -12,7 +12,7 @@ $recentNotifications = Notification::where('user_id', auth()->id())
 $notificationStyle = 'modern'; // You can change this to switch styles
 @endphp
 
-<div class="dropdown notification-dropdown">
+<div class="dropdown notification-dropdown" style="position: relative; z-index: 99999;">
     <button class="btn btn-link text-white position-relative notification-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false">
         <i class="fas fa-bell fa-lg"></i>
         @if($unreadCount > 0)
@@ -41,7 +41,7 @@ $notificationStyle = 'modern'; // You can change this to switch styles
         @endif
     </button>
     
-    <div class="dropdown-menu dropdown-menu-end notification-menu" style="width: 380px; max-height: 450px; overflow-y: auto;">
+    <div class="dropdown-menu dropdown-menu-end notification-menu" style="width: 480px; max-height: 450px; overflow-y: auto; z-index: 99999 !important; position: absolute !important;">
         <div class="dropdown-header notification-header">
             <div class="d-flex justify-content-between align-items-center">
                 <h6 class="mb-0 fw-bold">Notifications</h6>
@@ -99,6 +99,7 @@ $notificationStyle = 'modern'; // You can change this to switch styles
 <style>
 .notification-dropdown {
     position: relative;
+    z-index: 99999 !important;
 }
 
 .notification-btn {
@@ -214,6 +215,11 @@ $notificationStyle = 'modern'; // You can change this to switch styles
     border-radius: 12px;
     padding: 0;
     margin-top: 0.5rem;
+    z-index: 99999 !important;
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: auto !important;
 }
 
 .notification-header {

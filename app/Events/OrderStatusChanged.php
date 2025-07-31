@@ -47,7 +47,7 @@ class OrderStatusChanged implements ShouldBroadcast
         $channels[] = new PrivateChannel('admin');
 
         // Broadcast to factory users if status is production-related
-        $productionStatuses = ['approved', 'in_production', 'finishing', 'ready_for_delivery'];
+        $productionStatuses = ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'];
         if (in_array($this->newStatus, $productionStatuses)) {
             $channels[] = new PrivateChannel('factory');
         }

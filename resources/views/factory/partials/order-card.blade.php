@@ -71,15 +71,6 @@
                 <i class="fas fa-eye"></i>
             </a>
             
-            @if($order->canUpdateStatus(auth()->user()))
-                <button type="button" 
-                        class="btn btn-sm btn-outline-success flex-fill"
-                        onclick="openStatusModal({{ $order->id }}, '{{ $order->order_status }}')"
-                        title="Update Status">
-                    <i class="fas fa-edit"></i>
-                </button>
-            @endif
-            
             <button type="button" 
                     class="btn btn-sm btn-outline-info flex-fill"
                     onclick="openPriorityModal({{ $order->id }}, '{{ $order->priority }}')"
@@ -89,7 +80,7 @@
         </div>
 
         <!-- Quick Status Update -->
-        @if($order->canUpdateStatus(auth()->user()) && $order->order_status !== 'ready_for_delivery')
+        @if($order->canUpdateStatus(auth()->user()) && !in_array($order->order_status, ['ready_for_delivery', 'delivered_to_brayne']))
         <div class="mt-2">
             <div class="btn-group w-100" role="group">
                 @if($order->order_status === 'approved')
@@ -111,97 +102,37 @@
             </div>
         </div>
         @endif
-    </div>
-</div>
 
-<!-- Status Update Modal -->
-<div class="modal fade" id="statusModal{{ $order->id }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Update Order Status</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <!-- Quick Delivery Update -->
+        @if($order->canUpdateStatus(auth()->user()) && $order->order_status === 'ready_for_delivery')
+        <div class="mt-2">
+            <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-sm btn-primary" 
+                        onclick="quickUpdateStatus({{ $order->id }}, 'delivered_to_brayne')">
+                    Mark Delivered to Brayne
+                </button>
             </div>
-            <form action="{{ route('factory.update-status', $order) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="order_status" class="form-label">New Status</label>
-                        <select class="form-select" name="order_status" required>
-                            @foreach($order->getNextAvailableStatuses(auth()->user()) as $status => $label)
-                                <option value="{{ $status }}" {{ $order->order_status === $status ? 'selected' : '' }}>
-                                    {{ $label }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="estimated_production_hours" class="form-label">Estimated Production Hours</label>
-                        <input type="number" class="form-control" name="estimated_production_hours" 
-                               value="{{ $order->estimated_production_hours }}" min="1">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="estimated_finishing_hours" class="form-label">Estimated Finishing Hours</label>
-                        <input type="number" class="form-control" name="estimated_finishing_hours" 
-                               value="{{ $order->estimated_finishing_hours }}" min="1">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="production_notes" class="form-label">Production Notes</label>
-                        <textarea class="form-control" name="production_notes" rows="3" 
-                                  placeholder="Add any production notes...">{{ $order->production_notes }}</textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Status</button>
-                </div>
-            </form>
         </div>
+        @endif
     </div>
 </div>
 
-<!-- Priority Update Modal -->
-<div class="modal fade" id="priorityModal{{ $order->id }}" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Update Order Priority</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('factory.update-priority', $order) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="priority" class="form-label">Priority Level</label>
-                        <select class="form-select" name="priority" required>
-                            <option value="low" {{ $order->priority === 'low' ? 'selected' : '' }}>Low</option>
-                            <option value="normal" {{ $order->priority === 'normal' ? 'selected' : '' }}>Normal</option>
-                            <option value="urgent" {{ $order->priority === 'urgent' ? 'selected' : '' }}>Urgent</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Priority</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<script>
-function openStatusModal(orderId, currentStatus) {
-    new bootstrap.Modal(document.getElementById('statusModal' + orderId)).show();
-}
 
-function openPriorityModal(orderId, currentPriority) {
-    new bootstrap.Modal(document.getElementById('priorityModal' + orderId)).show();
-}
+
+
+ <script>
+ function openPriorityModal(orderId, currentPriority) {
+     const modal = document.getElementById('priorityModal');
+     const form = document.getElementById('priorityForm');
+     form.action = `/factory/orders/${orderId}/priority`;
+     
+     // Set current priority
+     const prioritySelect = form.querySelector('select[name="priority"]');
+     prioritySelect.value = currentPriority;
+     
+     new bootstrap.Modal(modal).show();
+ }
 
 function quickUpdateStatus(orderId, newStatus) {
     if (confirm('Are you sure you want to update this order status?')) {

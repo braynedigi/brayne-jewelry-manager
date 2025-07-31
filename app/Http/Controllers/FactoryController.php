@@ -24,7 +24,7 @@ class FactoryController extends Controller
         }
 
         // Get orders in production workflow
-        $productionOrders = Order::whereIn('order_status', ['approved', 'in_production', 'finishing', 'ready_for_delivery'])
+        $productionOrders = Order::whereIn('order_status', ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'])
             ->with(['distributor.user', 'customer', 'products'])
             ->orderBy('priority', 'desc')
             ->orderBy('estimated_delivery_ready', 'asc')
@@ -35,6 +35,7 @@ class FactoryController extends Controller
         $inProductionOrders = $productionOrders->where('order_status', 'in_production');
         $finishingOrders = $productionOrders->where('order_status', 'finishing');
         $readyOrders = $productionOrders->where('order_status', 'ready_for_delivery');
+        $deliveredOrders = $productionOrders->where('order_status', 'delivered_to_brayne');
 
         // Calculate workload statistics
         $totalEstimatedHours = $productionOrders->sum('estimated_production_hours') + $productionOrders->sum('estimated_finishing_hours');
@@ -61,6 +62,7 @@ class FactoryController extends Controller
             'inProductionOrders', 
             'finishingOrders',
             'readyOrders',
+            'deliveredOrders',
             'totalEstimatedHours',
             'urgentOrders',
             'overdueOrders',
@@ -81,7 +83,7 @@ class FactoryController extends Controller
             abort(403, 'Access denied. Factory role required.');
         }
 
-        $query = Order::whereIn('order_status', ['approved', 'in_production', 'finishing', 'ready_for_delivery'])
+        $query = Order::whereIn('order_status', ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'])
             ->with(['distributor.user', 'customer', 'products']);
 
         // Apply filters
@@ -121,22 +123,23 @@ class FactoryController extends Controller
         }
 
         // Check if order is in factory workflow
-        if (!in_array($order->order_status, ['approved', 'in_production', 'finishing', 'ready_for_delivery'])) {
+        if (!in_array($order->order_status, ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'])) {
             return back()->withErrors(['error' => 'Order is not in factory workflow.']);
         }
 
-        // Get available statuses for factory
-        $availableStatuses = $order->getNextAvailableStatuses($user);
-        
         $validated = $request->validate([
-            'order_status' => 'required|in:approved,in_production,finishing,ready_for_delivery',
+            'order_status' => 'required|in:approved,in_production,finishing,ready_for_delivery,delivered_to_brayne',
             'production_notes' => 'nullable|string|max:1000',
             'estimated_production_hours' => 'nullable|integer|min:1',
             'estimated_finishing_hours' => 'nullable|integer|min:1',
         ]);
 
-        // Additional validation: ensure the new status is in the available statuses
-        if (!array_key_exists($validated['order_status'], $availableStatuses)) {
+        // Factory validation: ensure the new status comes after the current status in the workflow
+        $workflowOrder = ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'];
+        $currentIndex = array_search($order->order_status, $workflowOrder);
+        $newIndex = array_search($validated['order_status'], $workflowOrder);
+        
+        if ($currentIndex === false || $newIndex === false || $newIndex <= $currentIndex) {
             return back()->withErrors(['order_status' => 'Invalid status transition for current order state.']);
         }
 

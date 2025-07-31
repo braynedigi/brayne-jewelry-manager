@@ -1,0 +1,256 @@
+/* Button Styles */
+.btn-primary {
+    background-color: var(--primary-button-color) !important;
+    border-color: var(--primary-button-color) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-button-color) !important;
+    border-color: var(--primary-button-color) !important;
+    filter: brightness(0.85) !important;
+}
+
+.btn-secondary {
+    background-color: var(--secondary-button-color) !important;
+    border-color: var(--secondary-button-color) !important;
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-button-color) !important;
+    border-color: var(--secondary-button-color) !important;
+    filter: brightness(0.85) !important;
+}
+
+.btn-success {
+    background-color: var(--success-button-color) !important;
+    border-color: var(--success-button-color) !important;
+}
+
+.btn-success:hover {
+    background-color: var(--success-button-color) !important;
+    border-color: var(--success-button-color) !important;
+    filter: brightness(0.85) !important;
+}
+
+.btn-warning {
+    background-color: var(--warning-button-color) !important;
+    border-color: var(--warning-button-color) !important;
+}
+
+.btn-warning:hover {
+    background-color: var(--warning-button-color) !important;
+    border-color: var(--warning-button-color) !important;
+    filter: brightness(0.85) !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-button-color) !important;
+    border-color: var(--danger-button-color) !important;
+}
+
+.btn-danger:hover {
+    background-color: var(--danger-button-color) !important;
+    border-color: var(--danger-button-color) !important;
+    filter: brightness(0.85) !important;
+}
+
+.btn-info {
+    background-color: var(--info-button-color) !important;
+    border-color: var(--info-button-color) !important;
+}
+
+.btn-info:hover {
+    background-color: var(--info-button-color) !important;
+    border-color: var(--info-button-color) !important;
+    filter: brightness(0.85) !important;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background-color: var(--sidebar-background-color) !important;
+}
+
+.sidebar .nav-link {
+    color: var(--sidebar-text-color) !important;
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+    background-color: var(--sidebar-active-color) !important;
+    color: white !important;
+}
+
+/* Top Navbar */
+.navbar {
+    background-color: var(--top-navbar-color) !important;
+}
+
+.navbar .navbar-brand,
+.navbar .nav-link {
+    color: var(--top-navbar-text-color) !important;
+}
+
+/* Card Styles */
+.card {
+    background-color: var(--card-background-color) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 2px 4px var(--shadow-color)20 !important;
+}
+
+.card-header {
+    background-color: var(--card-header-color) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+/* Right Panel */
+.right-panel {
+    background-color: var(--right-panel-color) !important;
+}
+
+/* Status Badges */
+.badge.bg-warning,
+.badge.bg-pending {
+    background-color: var(--status-pending-color) !important;
+}
+
+.badge.bg-info,
+.badge.bg-approved {
+    background-color: var(--status-approved-color) !important;
+}
+
+.badge.bg-primary,
+.badge.bg-production {
+    background-color: var(--status-production-color) !important;
+}
+
+.badge.bg-success,
+.badge.bg-completed {
+    background-color: var(--status-completed-color) !important;
+}
+
+/* Links */
+a {
+    color: var(--link-color) !important;
+}
+
+a:hover {
+    color: var(--link-color) !important;
+    filter: brightness(0.85) !important;
+}
+
+/* Borders */
+.border,
+.border-top,
+.border-bottom,
+.border-left,
+.border-right {
+    border-color: var(--border-color) !important;
+}
+
+/* Form Controls */
+.form-control:focus {
+    border-color: var(--primary-button-color) !important;
+    box-shadow: 0 0 0 0.2rem var(--primary-button-color)40 !important;
+}
+
+/* Table Borders */
+.table {
+    border-color: var(--border-color) !important;
+}
+
+.table th,
+.table td {
+    border-color: var(--border-color) !important;
+}
+
+/* Modal Styles */
+.modal-header {
+    background-color: var(--card-header-color) !important;
+    border-bottom-color: var(--border-color) !important;
+}
+
+.modal-footer {
+    background-color: var(--card-header-color) !important;
+    border-top-color: var(--border-color) !important;
+}
+
+/* Alert Styles */
+.alert-info {
+    background-color: var(--status-approved-color)20 !important;
+    border-color: var(--status-approved-color) !important;
+    color: var(--status-approved-color) !important;
+}
+
+.alert-success {
+    background-color: var(--status-completed-color)20 !important;
+    border-color: var(--status-completed-color) !important;
+    color: var(--status-completed-color) !important;
+}
+
+.alert-warning {
+    background-color: var(--status-pending-color)20 !important;
+    border-color: var(--status-pending-color) !important;
+    color: var(--status-pending-color) !important;
+}
+
+.alert-danger {
+    background-color: var(--danger-button-color)20 !important;
+    border-color: var(--danger-button-color) !important;
+    color: var(--danger-button-color) !important;
+}
+
+/* Progress Bars */
+.progress-bar {
+    background-color: var(--primary-button-color) !important;
+}
+
+/* Pagination */
+.page-link {
+    color: var(--link-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+.page-link:hover {
+    color: var(--link-color) !important;
+    background-color: var(--card-header-color) !important;
+    filter: brightness(0.85) !important;
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-button-color) !important;
+    border-color: var(--primary-button-color) !important;
+}
+
+/* Dropdown */
+.dropdown-menu {
+    background-color: var(--card-background-color) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: 0 2px 8px var(--shadow-color)30 !important;
+}
+
+.dropdown-item:hover {
+    background-color: var(--card-header-color) !important;
+}
+
+/* Tooltips */
+.tooltip-inner {
+    background-color: var(--sidebar-background-color) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--card-header-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-button-color);
+} 

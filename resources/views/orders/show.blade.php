@@ -367,7 +367,13 @@ function openStatusModal(orderId, currentStatus) {
     const form = document.getElementById('statusForm');
     const statusSelect = document.getElementById('order_status');
     
-    form.action = `/orders/${orderId}/status`;
+    // Set the correct route based on user role
+    const userRole = '{{ auth()->user()->role }}';
+    if (userRole === 'factory') {
+        form.action = `/factory/orders/${orderId}/status`;
+    } else {
+        form.action = `/orders/${orderId}/status`;
+    }
     
     // Clear existing options
     statusSelect.innerHTML = '';
@@ -395,47 +401,38 @@ function getAvailableStatuses(currentStatus) {
     const userRole = '{{ auth()->user()->role }}';
     
     if (userRole === 'admin') {
-        // Admin can move through the entire workflow
-        const adminFlow = {
-            'pending_payment': [
-                { value: 'approved', label: 'Approved' },
-                { value: 'cancelled', label: 'Cancelled' }
-            ],
-            'approved': [
-                { value: 'in_production', label: 'In Production' },
-                { value: 'cancelled', label: 'Cancelled' }
-            ],
-            'in_production': [
-                { value: 'finishing', label: 'Finishing' },
-                { value: 'cancelled', label: 'Cancelled' }
-            ],
-            'finishing': [
-                { value: 'ready_for_delivery', label: 'Ready for Delivery' },
-                { value: 'cancelled', label: 'Cancelled' }
-            ],
-            'ready_for_delivery': [
-                { value: 'delivered_to_brayne', label: 'Delivered to Brayne Jewelry' },
-                { value: 'cancelled', label: 'Cancelled' }
-            ],
-            'delivered_to_brayne': [
-                { value: 'delivered_to_client', label: 'Delivered to Client' }
-            ]
-        };
-        return adminFlow[currentStatus] || [];
+        // Admin can see and update to ALL statuses
+        const allStatuses = [
+            { value: 'pending_payment', label: 'Pending 50% Payment' },
+            { value: 'approved', label: 'Approved' },
+            { value: 'in_production', label: 'In Production' },
+            { value: 'finishing', label: 'Finishing' },
+            { value: 'ready_for_delivery', label: 'Ready for Delivery' },
+            { value: 'delivered_to_brayne', label: 'Delivered to Brayne Jewelry' },
+            { value: 'delivered_to_client', label: 'Delivered to Client' },
+            { value: 'cancelled', label: 'Cancelled' }
+        ];
+        
+        // Filter out the current status
+        return allStatuses.filter(status => status.value !== currentStatus);
     } else if (userRole === 'factory') {
-        // Factory can only move forward in production
-        const factoryFlow = {
-            'approved': [
-                { value: 'in_production', label: 'In Production' }
-            ],
-            'in_production': [
-                { value: 'finishing', label: 'Finishing' }
-            ],
-            'finishing': [
-                { value: 'ready_for_delivery', label: 'Ready for Delivery' }
-            ]
-        };
-        return factoryFlow[currentStatus] || [];
+        // Factory can see all factory workflow statuses
+        const factoryStatuses = [
+            { value: 'approved', label: 'Approved' },
+            { value: 'in_production', label: 'In Production' },
+            { value: 'finishing', label: 'Finishing' },
+            { value: 'ready_for_delivery', label: 'Ready for Delivery' },
+            { value: 'delivered_to_brayne', label: 'Delivered to Brayne' }
+        ];
+        
+        // Filter out the current status and any statuses that come before it in the workflow
+        const workflowOrder = ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'];
+        const currentIndex = workflowOrder.indexOf(currentStatus);
+        
+        return factoryStatuses.filter(status => {
+            const statusIndex = workflowOrder.indexOf(status.value);
+            return statusIndex > currentIndex; // Only show statuses that come after the current status
+        });
     }
     
     return [];

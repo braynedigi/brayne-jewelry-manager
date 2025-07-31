@@ -80,8 +80,9 @@ use App\Models\Setting;
                     @method('PUT')
                     
                     <div class="tab-section active" id="appearance">
+                        <!-- Login Page Appearance -->
                         <h5 class="mb-4">
-                            <i class="fas fa-palette me-2"></i>Login Page Appearance
+                            <i class="fas fa-sign-in-alt me-2"></i>Login Page Appearance
                         </h5>
                         
                         <div class="row">
@@ -118,6 +119,283 @@ use App\Models\Setting;
                                              alt="Current Background" class="img-thumbnail" style="max-height: 100px;">
                                     </div>
                                 @endif
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Button Colors -->
+                        <h5 class="mb-4">
+                            <i class="fas fa-square me-2"></i>Button Colors
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <label for="primary_button_color" class="form-label">Primary Button Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="primary_button_color" name="settings[primary_button_color]"
+                                       value="{{ Setting::getValue('primary_button_color', '#0d6efd') }}">
+                                <div class="form-text">Main action buttons (Create, Save, etc.)</div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn" style="background-color: {{ Setting::getValue('primary_button_color', '#0d6efd') }}; color: white;">Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="secondary_button_color" class="form-label">Secondary Button Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="secondary_button_color" name="settings[secondary_button_color]"
+                                       value="{{ Setting::getValue('secondary_button_color', '#6c757d') }}">
+                                <div class="form-text">Secondary action buttons (Cancel, Back, etc.)</div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn" style="background-color: {{ Setting::getValue('secondary_button_color', '#6c757d') }}; color: white;">Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="success_button_color" class="form-label">Success Button Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="success_button_color" name="settings[success_button_color]"
+                                       value="{{ Setting::getValue('success_button_color', '#198754') }}">
+                                <div class="form-text">Success action buttons (Approve, Complete, etc.)</div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn" style="background-color: {{ Setting::getValue('success_button_color', '#198754') }}; color: white;">Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="warning_button_color" class="form-label">Warning Button Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="warning_button_color" name="settings[warning_button_color]"
+                                       value="{{ Setting::getValue('warning_button_color', '#ffc107') }}">
+                                <div class="form-text">Warning action buttons (Edit, Update, etc.)</div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn" style="background-color: {{ Setting::getValue('warning_button_color', '#ffc107') }}; color: black;">Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="danger_button_color" class="form-label">Danger Button Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="danger_button_color" name="settings[danger_button_color]"
+                                       value="{{ Setting::getValue('danger_button_color', '#dc3545') }}">
+                                <div class="form-text">Danger action buttons (Delete, Cancel, etc.)</div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn" style="background-color: {{ Setting::getValue('danger_button_color', '#dc3545') }}; color: white;">Preview</button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="info_button_color" class="form-label">Info Button Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="info_button_color" name="settings[info_button_color]"
+                                       value="{{ Setting::getValue('info_button_color', '#0dcaf0') }}">
+                                <div class="form-text">Info action buttons (View, Details, etc.)</div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn" style="background-color: {{ Setting::getValue('info_button_color', '#0dcaf0') }}; color: white;">Preview</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Sidebar & Navigation Colors -->
+                        <h5 class="mb-4">
+                            <i class="fas fa-bars me-2"></i>Sidebar & Navigation Colors
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <label for="sidebar_background_color" class="form-label">Sidebar Background</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="sidebar_background_color" name="settings[sidebar_background_color]"
+                                       value="{{ Setting::getValue('sidebar_background_color', '#343a40') }}">
+                                <div class="form-text">Background color for the left sidebar</div>
+                                <div class="mt-2 p-2" style="background-color: {{ Setting::getValue('sidebar_background_color', '#343a40') }}; border-radius: 4px; min-height: 40px;"></div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="sidebar_text_color" class="form-label">Sidebar Text Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="sidebar_text_color" name="settings[sidebar_text_color]"
+                                       value="{{ Setting::getValue('sidebar_text_color', '#ffffff') }}">
+                                <div class="form-text">Text color for sidebar menu items</div>
+                                <div class="mt-2 p-2" style="background-color: {{ Setting::getValue('sidebar_background_color', '#343a40') }}; color: {{ Setting::getValue('sidebar_text_color', '#ffffff') }}; border-radius: 4px;">Sample Text</div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="sidebar_active_color" class="form-label">Active Menu Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="sidebar_active_color" name="settings[sidebar_active_color]"
+                                       value="{{ Setting::getValue('sidebar_active_color', '#007bff') }}">
+                                <div class="form-text">Color for active/selected menu items</div>
+                                <div class="mt-2 p-2" style="background-color: {{ Setting::getValue('sidebar_active_color', '#007bff') }}; color: white; border-radius: 4px;">Active Item</div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="top_navbar_color" class="form-label">Top Navbar Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="top_navbar_color" name="settings[top_navbar_color]"
+                                       value="{{ Setting::getValue('top_navbar_color', '#ffffff') }}">
+                                <div class="form-text">Background color for the top navigation bar</div>
+                                <div class="mt-2 p-2" style="background-color: {{ Setting::getValue('top_navbar_color', '#ffffff') }}; border: 1px solid #dee2e6; border-radius: 4px; min-height: 40px;"></div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="top_navbar_text_color" class="form-label">Top Navbar Text</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="top_navbar_text_color" name="settings[top_navbar_text_color]"
+                                       value="{{ Setting::getValue('top_navbar_text_color', '#212529') }}">
+                                <div class="form-text">Text color for the top navigation bar</div>
+                                <div class="mt-2 p-2" style="background-color: {{ Setting::getValue('top_navbar_color', '#ffffff') }}; color: {{ Setting::getValue('top_navbar_text_color', '#212529') }}; border: 1px solid #dee2e6; border-radius: 4px;">Sample Text</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Card & Panel Colors -->
+                        <h5 class="mb-4">
+                            <i class="fas fa-credit-card me-2"></i>Card & Panel Colors
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <label for="card_background_color" class="form-label">Card Background</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="card_background_color" name="settings[card_background_color]"
+                                       value="{{ Setting::getValue('card_background_color', '#ffffff') }}">
+                                <div class="form-text">Background color for content cards</div>
+                                <div class="mt-2 p-3" style="background-color: {{ Setting::getValue('card_background_color', '#ffffff') }}; border: 1px solid #dee2e6; border-radius: 4px; min-height: 60px;"></div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="card_header_color" class="form-label">Card Header Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="card_header_color" name="settings[card_header_color]"
+                                       value="{{ Setting::getValue('card_header_color', '#f8f9fa') }}">
+                                <div class="form-text">Background color for card headers</div>
+                                <div class="mt-2 p-2" style="background-color: {{ Setting::getValue('card_header_color', '#f8f9fa') }}; border: 1px solid #dee2e6; border-radius: 4px;">Card Header</div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="right_panel_color" class="form-label">Right Panel Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="right_panel_color" name="settings[right_panel_color]"
+                                       value="{{ Setting::getValue('right_panel_color', '#f8f9fa') }}">
+                                <div class="form-text">Background color for right sidebar panels</div>
+                                <div class="mt-2 p-3" style="background-color: {{ Setting::getValue('right_panel_color', '#f8f9fa') }}; border: 1px solid #dee2e6; border-radius: 4px; min-height: 60px;"></div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Status Badge Colors -->
+                        <h5 class="mb-4">
+                            <i class="fas fa-tags me-2"></i>Status Badge Colors
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-3 mb-4">
+                                <label for="status_pending_color" class="form-label">Pending Status</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="status_pending_color" name="settings[status_pending_color]"
+                                       value="{{ Setting::getValue('status_pending_color', '#ffc107') }}">
+                                <div class="form-text">Color for pending status badges</div>
+                                <div class="mt-2">
+                                    <span class="badge" style="background-color: {{ Setting::getValue('status_pending_color', '#ffc107') }}; color: black;">Pending</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-4">
+                                <label for="status_approved_color" class="form-label">Approved Status</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="status_approved_color" name="settings[status_approved_color]"
+                                       value="{{ Setting::getValue('status_approved_color', '#0dcaf0') }}">
+                                <div class="form-text">Color for approved status badges</div>
+                                <div class="mt-2">
+                                    <span class="badge" style="background-color: {{ Setting::getValue('status_approved_color', '#0dcaf0') }}; color: white;">Approved</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-4">
+                                <label for="status_production_color" class="form-label">Production Status</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="status_production_color" name="settings[status_production_color]"
+                                       value="{{ Setting::getValue('status_production_color', '#0d6efd') }}">
+                                <div class="form-text">Color for production status badges</div>
+                                <div class="mt-2">
+                                    <span class="badge" style="background-color: {{ Setting::getValue('status_production_color', '#0d6efd') }}; color: white;">In Production</span>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3 mb-4">
+                                <label for="status_completed_color" class="form-label">Completed Status</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="status_completed_color" name="settings[status_completed_color]"
+                                       value="{{ Setting::getValue('status_completed_color', '#198754') }}">
+                                <div class="form-text">Color for completed status badges</div>
+                                <div class="mt-2">
+                                    <span class="badge" style="background-color: {{ Setting::getValue('status_completed_color', '#198754') }}; color: white;">Completed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Additional UI Colors -->
+                        <h5 class="mb-4">
+                            <i class="fas fa-paint-brush me-2"></i>Additional UI Colors
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <label for="link_color" class="form-label">Link Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="link_color" name="settings[link_color]"
+                                       value="{{ Setting::getValue('link_color', '#0d6efd') }}">
+                                <div class="form-text">Color for hyperlinks throughout the application</div>
+                                <div class="mt-2">
+                                    <a href="#" style="color: {{ Setting::getValue('link_color', '#0d6efd') }};">Sample Link</a>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="border_color" class="form-label">Border Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="border_color" name="settings[border_color]"
+                                       value="{{ Setting::getValue('border_color', '#dee2e6') }}">
+                                <div class="form-text">Color for borders and dividers</div>
+                                <div class="mt-2 p-2" style="border: 2px solid {{ Setting::getValue('border_color', '#dee2e6') }}; border-radius: 4px;">Sample Border</div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <label for="shadow_color" class="form-label">Shadow Color</label>
+                                <input type="color" class="form-control form-control-color" 
+                                       id="shadow_color" name="settings[shadow_color]"
+                                       value="{{ Setting::getValue('shadow_color', '#000000') }}">
+                                <div class="form-text">Color for shadows and depth effects</div>
+                                <div class="mt-2 p-3" style="box-shadow: 0 2px 4px {{ Setting::getValue('shadow_color', '#000000') }}20; border-radius: 4px; background: white;">Sample Shadow</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Color Presets -->
+                        <h5 class="mb-4">
+                            <i class="fas fa-palette me-2"></i>Color Presets
+                        </h5>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <p class="text-muted">Quick apply predefined color schemes:</p>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-primary" onclick="applyPreset('default')">Default Blue</button>
+                                    <button type="button" class="btn btn-outline-success" onclick="applyPreset('green')">Green Theme</button>
+                                    <button type="button" class="btn btn-outline-warning" onclick="applyPreset('orange')">Orange Theme</button>
+                                    <button type="button" class="btn btn-outline-danger" onclick="applyPreset('red')">Red Theme</button>
+                                    <button type="button" class="btn btn-outline-info" onclick="applyPreset('purple')">Purple Theme</button>
+                                    <button type="button" class="btn btn-outline-dark" onclick="applyPreset('dark')">Dark Theme</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1202,6 +1480,271 @@ function deleteEmailTemplate(templateId, templateName) {
         document.body.appendChild(form);
         form.submit();
     }
+}
+
+// Color customization functions
+document.addEventListener('DOMContentLoaded', function() {
+    // Live preview for color inputs
+    const colorInputs = document.querySelectorAll('input[type="color"]');
+    colorInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            updateColorPreview(this);
+        });
+    });
+});
+
+function updateColorPreview(colorInput) {
+    const color = colorInput.value;
+    const inputId = colorInput.id;
+    
+    // Update button previews
+    if (inputId.includes('button_color')) {
+        const previewButton = colorInput.parentElement.querySelector('.btn');
+        if (previewButton) {
+            previewButton.style.backgroundColor = color;
+            // Adjust text color based on background brightness
+            const brightness = getBrightness(color);
+            previewButton.style.color = brightness > 128 ? 'black' : 'white';
+        }
+    }
+    
+    // Update badge previews
+    if (inputId.includes('status_')) {
+        const previewBadge = colorInput.parentElement.querySelector('.badge');
+        if (previewBadge) {
+            previewBadge.style.backgroundColor = color;
+            const brightness = getBrightness(color);
+            previewBadge.style.color = brightness > 128 ? 'black' : 'white';
+        }
+    }
+    
+    // Update sidebar previews
+    if (inputId === 'sidebar_background_color') {
+        const previewDiv = colorInput.parentElement.querySelector('div[style*="background-color"]');
+        if (previewDiv) {
+            previewDiv.style.backgroundColor = color;
+        }
+    }
+    
+    if (inputId === 'sidebar_text_color') {
+        const previewDiv = document.querySelector('div[style*="background-color"]');
+        if (previewDiv && previewDiv.parentElement.querySelector('#sidebar_background_color')) {
+            previewDiv.style.color = color;
+        }
+    }
+    
+    // Update link preview
+    if (inputId === 'link_color') {
+        const previewLink = colorInput.parentElement.querySelector('a');
+        if (previewLink) {
+            previewLink.style.color = color;
+        }
+    }
+    
+    // Update border preview
+    if (inputId === 'border_color') {
+        const previewDiv = colorInput.parentElement.querySelector('div[style*="border"]');
+        if (previewDiv) {
+            previewDiv.style.borderColor = color;
+        }
+    }
+    
+    // Update shadow preview
+    if (inputId === 'shadow_color') {
+        const previewDiv = colorInput.parentElement.querySelector('div[style*="box-shadow"]');
+        if (previewDiv) {
+            previewDiv.style.boxShadow = `0 2px 4px ${color}20`;
+        }
+    }
+}
+
+function getBrightness(hex) {
+    // Convert hex to RGB
+    const r = parseInt(hex.substr(1, 2), 16);
+    const g = parseInt(hex.substr(3, 2), 16);
+    const b = parseInt(hex.substr(5, 2), 16);
+    
+    // Calculate brightness
+    return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+function applyPreset(presetName) {
+    const presets = {
+        'default': {
+            'primary_button_color': '#0d6efd',
+            'secondary_button_color': '#6c757d',
+            'success_button_color': '#198754',
+            'warning_button_color': '#ffc107',
+            'danger_button_color': '#dc3545',
+            'info_button_color': '#0dcaf0',
+            'sidebar_background_color': '#343a40',
+            'sidebar_text_color': '#ffffff',
+            'sidebar_active_color': '#007bff',
+            'top_navbar_color': '#ffffff',
+            'top_navbar_text_color': '#212529',
+            'card_background_color': '#ffffff',
+            'card_header_color': '#f8f9fa',
+            'right_panel_color': '#f8f9fa',
+            'status_pending_color': '#ffc107',
+            'status_approved_color': '#0dcaf0',
+            'status_production_color': '#0d6efd',
+            'status_completed_color': '#198754',
+            'link_color': '#0d6efd',
+            'border_color': '#dee2e6',
+            'shadow_color': '#000000'
+        },
+        'green': {
+            'primary_button_color': '#198754',
+            'secondary_button_color': '#6c757d',
+            'success_button_color': '#20c997',
+            'warning_button_color': '#ffc107',
+            'danger_button_color': '#dc3545',
+            'info_button_color': '#0dcaf0',
+            'sidebar_background_color': '#198754',
+            'sidebar_text_color': '#ffffff',
+            'sidebar_active_color': '#20c997',
+            'top_navbar_color': '#ffffff',
+            'top_navbar_text_color': '#212529',
+            'card_background_color': '#ffffff',
+            'card_header_color': '#f8f9fa',
+            'right_panel_color': '#f8f9fa',
+            'status_pending_color': '#ffc107',
+            'status_approved_color': '#0dcaf0',
+            'status_production_color': '#198754',
+            'status_completed_color': '#20c997',
+            'link_color': '#198754',
+            'border_color': '#dee2e6',
+            'shadow_color': '#000000'
+        },
+        'orange': {
+            'primary_button_color': '#fd7e14',
+            'secondary_button_color': '#6c757d',
+            'success_button_color': '#198754',
+            'warning_button_color': '#ffc107',
+            'danger_button_color': '#dc3545',
+            'info_button_color': '#0dcaf0',
+            'sidebar_background_color': '#fd7e14',
+            'sidebar_text_color': '#ffffff',
+            'sidebar_active_color': '#ffc107',
+            'top_navbar_color': '#ffffff',
+            'top_navbar_text_color': '#212529',
+            'card_background_color': '#ffffff',
+            'card_header_color': '#f8f9fa',
+            'right_panel_color': '#f8f9fa',
+            'status_pending_color': '#ffc107',
+            'status_approved_color': '#0dcaf0',
+            'status_production_color': '#fd7e14',
+            'status_completed_color': '#198754',
+            'link_color': '#fd7e14',
+            'border_color': '#dee2e6',
+            'shadow_color': '#000000'
+        },
+        'red': {
+            'primary_button_color': '#dc3545',
+            'secondary_button_color': '#6c757d',
+            'success_button_color': '#198754',
+            'warning_button_color': '#ffc107',
+            'danger_button_color': '#fd7e14',
+            'info_button_color': '#0dcaf0',
+            'sidebar_background_color': '#dc3545',
+            'sidebar_text_color': '#ffffff',
+            'sidebar_active_color': '#fd7e14',
+            'top_navbar_color': '#ffffff',
+            'top_navbar_text_color': '#212529',
+            'card_background_color': '#ffffff',
+            'card_header_color': '#f8f9fa',
+            'right_panel_color': '#f8f9fa',
+            'status_pending_color': '#ffc107',
+            'status_approved_color': '#0dcaf0',
+            'status_production_color': '#dc3545',
+            'status_completed_color': '#198754',
+            'link_color': '#dc3545',
+            'border_color': '#dee2e6',
+            'shadow_color': '#000000'
+        },
+        'purple': {
+            'primary_button_color': '#6f42c1',
+            'secondary_button_color': '#6c757d',
+            'success_button_color': '#198754',
+            'warning_button_color': '#ffc107',
+            'danger_button_color': '#dc3545',
+            'info_button_color': '#0dcaf0',
+            'sidebar_background_color': '#6f42c1',
+            'sidebar_text_color': '#ffffff',
+            'sidebar_active_color': '#8b5cf6',
+            'top_navbar_color': '#ffffff',
+            'top_navbar_text_color': '#212529',
+            'card_background_color': '#ffffff',
+            'card_header_color': '#f8f9fa',
+            'right_panel_color': '#f8f9fa',
+            'status_pending_color': '#ffc107',
+            'status_approved_color': '#0dcaf0',
+            'status_production_color': '#6f42c1',
+            'status_completed_color': '#198754',
+            'link_color': '#6f42c1',
+            'border_color': '#dee2e6',
+            'shadow_color': '#000000'
+        },
+        'dark': {
+            'primary_button_color': '#212529',
+            'secondary_button_color': '#6c757d',
+            'success_button_color': '#198754',
+            'warning_button_color': '#ffc107',
+            'danger_button_color': '#dc3545',
+            'info_button_color': '#0dcaf0',
+            'sidebar_background_color': '#212529',
+            'sidebar_text_color': '#ffffff',
+            'sidebar_active_color': '#343a40',
+            'top_navbar_color': '#343a40',
+            'top_navbar_text_color': '#ffffff',
+            'card_background_color': '#343a40',
+            'card_header_color': '#495057',
+            'right_panel_color': '#495057',
+            'status_pending_color': '#ffc107',
+            'status_approved_color': '#0dcaf0',
+            'status_production_color': '#6c757d',
+            'status_completed_color': '#198754',
+            'link_color': '#ffffff',
+            'border_color': '#495057',
+            'shadow_color': '#000000'
+        }
+    };
+    
+    const preset = presets[presetName];
+    if (!preset) return;
+    
+    // Apply all colors from the preset
+    Object.keys(preset).forEach(key => {
+        const input = document.getElementById(key);
+        if (input) {
+            input.value = preset[key];
+            updateColorPreview(input);
+        }
+    });
+    
+    // Show success message
+    const toast = document.createElement('div');
+    toast.className = 'toast show position-fixed';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        <div class="toast-header bg-success text-white">
+            <i class="fas fa-palette me-2"></i>
+            <strong class="me-auto">Color Preset Applied</strong>
+            <button type="button" class="btn-close btn-close-white" onclick="this.closest('.toast').remove()"></button>
+        </div>
+        <div class="toast-body">
+            <div class="fw-bold">${presetName.charAt(0).toUpperCase() + presetName.slice(1)} Theme</div>
+            <div class="small">All colors have been updated. Click "Save Changes" to apply.</div>
+        </div>
+    `;
+    document.body.appendChild(toast);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
 }
 </script>
 @endpush 

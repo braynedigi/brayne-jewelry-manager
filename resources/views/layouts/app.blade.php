@@ -12,6 +12,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Theme CSS -->
+    <link href="{{ asset('css/custom-theme.css') }}?v={{ time() }}" rel="stylesheet">
     
     <style>
         :root {
@@ -78,7 +80,7 @@
         }
 
         .image-placeholder:hover {
-            border-color: var(--primary-color);
+            border-color: var(--primary-button-color);
             background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
         }
 
@@ -143,7 +145,7 @@
             left: 0;
             height: 100vh;
             width: 280px;
-            background: linear-gradient(135deg, var(--dark-bg) 0%, #334155 100%);
+            background: var(--sidebar-background-color);
             box-shadow: var(--shadow-xl);
             z-index: 1000;
             overflow-y: auto;
@@ -179,7 +181,7 @@
         }
 
         .nav-link {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--sidebar-text-color);
             padding: 0.75rem 1rem;
             border-radius: 0.75rem;
             transition: all 0.3s ease;
@@ -197,7 +199,7 @@
 
         .nav-link.active {
             color: white;
-            background: var(--primary-color);
+            background: var(--sidebar-active-color);
             box-shadow: var(--shadow-md);
         }
 
@@ -243,7 +245,7 @@
             border-radius: 1rem;
             box-shadow: var(--shadow-sm);
             transition: all 0.3s ease;
-            background: white;
+            background: var(--card-background-color);
         }
 
         .card:hover {
@@ -252,7 +254,7 @@
         }
 
         .card-header {
-            background: white;
+            background: var(--card-header-color);
             border-bottom: 1px solid var(--border-color);
             padding: 1.5rem;
             border-radius: 1rem 1rem 0 0;
@@ -263,7 +265,7 @@
             padding: 1.5rem;
         }
 
-        /* Buttons */
+        /* Buttons - These will be overridden by custom-theme.css */
         .btn {
             border-radius: 0.75rem;
             font-weight: 500;
@@ -272,40 +274,19 @@
             border: none;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .btn-primary:hover {
+        .btn:hover {
             transform: translateY(-1px);
             box-shadow: var(--shadow-md);
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
-        }
-
-        .btn-info {
-            background: linear-gradient(135deg, var(--info-color) 0%, #0891b2 100%);
-        }
-
         .btn-outline-primary {
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
+            border: 2px solid var(--primary-button-color);
+            color: var(--primary-button-color);
         }
 
         .btn-outline-primary:hover {
-            background: var(--primary-color);
-            border-color: var(--primary-color);
+            background: var(--primary-button-color);
+            border-color: var(--primary-button-color);
         }
 
         /* Forms */
@@ -318,7 +299,7 @@
         }
 
         .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
+            border-color: var(--primary-button-color);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
@@ -350,7 +331,7 @@
         }
 
         .table tbody tr:hover {
-            background-color: rgba(99, 102, 241, 0.02);
+            background-color: rgba(13, 110, 253, 0.02);
         }
 
         /* Badges */
@@ -369,7 +350,7 @@
 
         /* Stats Cards */
         .stats-card {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(135deg, var(--primary-button-color) 0%, var(--primary-button-color) 100%);
             color: white;
             border-radius: 1rem;
             padding: 1.5rem;
@@ -435,6 +416,18 @@
             color: white;
         }
 
+        .user-avatar-link {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .user-avatar-link:hover {
+            transform: scale(1.05);
+            text-decoration: none;
+            color: inherit;
+        }
+
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -444,6 +437,13 @@
             align-items: center;
             justify-content: center;
             font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .user-avatar-link:hover .user-avatar {
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         .user-details {
@@ -500,7 +500,7 @@
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-color);
+            background: var(--primary-button-color);
         }
     </style>
 
@@ -626,13 +626,15 @@
         <div class="user-menu">
             @include('components.notifications')
             <div class="user-info">
-                <div class="user-avatar">
-                    @if(auth()->user()->hasLogo())
-                        <img src="{{ auth()->user()->getLogoUrl() }}" alt="{{ auth()->user()->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                    @else
-                        {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
-                    @endif
-                </div>
+                <a href="{{ route('dashboard') }}" class="user-avatar-link" title="Go to Dashboard">
+                    <div class="user-avatar">
+                        @if(auth()->user()->hasLogo())
+                            <img src="{{ auth()->user()->getLogoUrl() }}" alt="{{ auth()->user()->name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        @else
+                            {{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 1)) }}
+                        @endif
+                    </div>
+                </a>
                 <div class="user-details">
                     <div style="font-weight: 600; font-size: 0.875rem;">{{ auth()->user()->name ?? 'User' }}</div>
                     <div style="font-size: 0.75rem; opacity: 0.8;">{{ ucfirst(auth()->user()->role ?? 'user') }}</div>

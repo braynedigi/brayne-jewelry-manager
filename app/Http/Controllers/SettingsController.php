@@ -28,46 +28,81 @@ class SettingsController extends Controller
         $updatedSettings = [];
 
         foreach ($request->settings as $key => $value) {
-            $setting = Setting::where('key', $key)->first();
-            
-            if ($setting) {
-                // Handle file uploads
-                if ($setting->type === 'file' && $request->hasFile("settings.{$key}")) {
-                    $file = $request->file("settings.{$key}");
-                    $path = $file->store('settings', 'public');
-                    
-                    // Delete old file if exists
-                    if ($setting->value && Storage::disk('public')->exists($setting->value)) {
-                        Storage::disk('public')->delete($setting->value);
-                    }
-                    
-                    $value = $path;
-                }
-
-                // Handle boolean values
-                if ($setting->type === 'boolean') {
-                    $value = $value ? true : false;
-                }
-
-                // Update the setting
-                $setting->update(['value' => $value]);
-                $updatedSettings[] = $key;
-                
-                // Log the update for debugging
-                \Log::info("Setting updated: {$key} = {$value}");
-            } else {
-                // If setting doesn't exist, create it
-                Setting::setValue($key, $value, 'string', 'general');
-                $updatedSettings[] = $key;
-                \Log::info("Setting created: {$key} = {$value}");
+            // Handle file uploads
+            if ($request->hasFile("settings.{$key}")) {
+                $file = $request->file("settings.{$key}");
+                $path = $file->store('settings', 'public');
+                $value = $path;
             }
+            
+            Setting::setValue($key, $value);
+            $updatedSettings[] = $key;
         }
 
-        // Clear all settings cache
-        Setting::clearCache();
+        // Generate dynamic CSS after updating settings
+        $this->generateDynamicCSS();
+
+        return back()->with('success', 'Settings updated successfully!');
+    }
+
+    /**
+     * Generate dynamic CSS file based on current settings
+     */
+    private function generateDynamicCSS()
+    {
+        $cssContent = $this->buildCSSContent();
+        $cssPath = public_path('css/custom-theme.css');
         
-        return redirect()->route('admin.settings.index')
-            ->with('success', 'Settings updated successfully!');
+        file_put_contents($cssPath, $cssContent);
+    }
+
+    /**
+     * Build CSS content with current settings
+     */
+    private function buildCSSContent()
+    {
+        $css = "/* Custom Theme CSS - Generated dynamically from admin settings */\n\n";
+        $css .= ":root {\n";
+        
+        // Button Colors
+        $css .= "    --primary-button-color: " . Setting::getValue('primary_button_color', '#0d6efd') . ";\n";
+        $css .= "    --secondary-button-color: " . Setting::getValue('secondary_button_color', '#6c757d') . ";\n";
+        $css .= "    --success-button-color: " . Setting::getValue('success_button_color', '#198754') . ";\n";
+        $css .= "    --warning-button-color: " . Setting::getValue('warning_button_color', '#ffc107') . ";\n";
+        $css .= "    --danger-button-color: " . Setting::getValue('danger_button_color', '#dc3545') . ";\n";
+        $css .= "    --info-button-color: " . Setting::getValue('info_button_color', '#0dcaf0') . ";\n";
+        
+        // Sidebar & Navigation Colors
+        $css .= "    --sidebar-background-color: " . Setting::getValue('sidebar_background_color', '#343a40') . ";\n";
+        $css .= "    --sidebar-text-color: " . Setting::getValue('sidebar_text_color', '#ffffff') . ";\n";
+        $css .= "    --sidebar-active-color: " . Setting::getValue('sidebar_active_color', '#007bff') . ";\n";
+        $css .= "    --top-navbar-color: " . Setting::getValue('top_navbar_color', '#ffffff') . ";\n";
+        $css .= "    --top-navbar-text-color: " . Setting::getValue('top_navbar_text_color', '#212529') . ";\n";
+        
+        // Card & Panel Colors
+        $css .= "    --card-background-color: " . Setting::getValue('card_background_color', '#ffffff') . ";\n";
+        $css .= "    --card-header-color: " . Setting::getValue('card_header_color', '#f8f9fa') . ";\n";
+        $css .= "    --right-panel-color: " . Setting::getValue('right_panel_color', '#f8f9fa') . ";\n";
+        
+        // Status Badge Colors
+        $css .= "    --status-pending-color: " . Setting::getValue('status_pending_color', '#ffc107') . ";\n";
+        $css .= "    --status-approved-color: " . Setting::getValue('status_approved_color', '#0dcaf0') . ";\n";
+        $css .= "    --status-production-color: " . Setting::getValue('status_production_color', '#0d6efd') . ";\n";
+        $css .= "    --status-completed-color: " . Setting::getValue('status_completed_color', '#198754') . ";\n";
+        
+        // Additional UI Colors
+        $css .= "    --link-color: " . Setting::getValue('link_color', '#0d6efd') . ";\n";
+        $css .= "    --border-color: " . Setting::getValue('border_color', '#dee2e6') . ";\n";
+        $css .= "    --shadow-color: " . Setting::getValue('shadow_color', '#000000') . ";\n";
+        
+        $css .= "}\n\n";
+        
+        // Add the rest of the CSS rules from the template file
+        $templateCss = file_get_contents(public_path('css/custom-theme-template.css'));
+        
+        $css .= $templateCss;
+        
+        return $css;
     }
 
     public function testEmail(Request $request)
@@ -123,6 +158,16 @@ class SettingsController extends Controller
         
         return redirect()->route('admin.settings.index')
             ->with('success', 'Settings cache cleared and refreshed!');
+    }
+
+    public function regenerateCSS()
+    {
+        try {
+            $this->generateDynamicCSS();
+            return response()->json(['success' => true, 'message' => 'CSS regenerated successfully!']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to regenerate CSS: ' . $e->getMessage()]);
+        }
     }
 
     // Admin courier management methods

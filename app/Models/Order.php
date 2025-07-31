@@ -158,6 +158,11 @@ class Order extends Model
      */
     public function getOrderStatusLabel(): string
     {
+        // If payment is fully paid but order status is pending_payment, show as approved
+        if ($this->order_status === 'pending_payment' && $this->isFullyPaid()) {
+            return 'Approved';
+        }
+        
         return match($this->order_status) {
             'pending_payment' => 'Pending 50% Payment',
             'approved' => 'Approved',
@@ -176,6 +181,11 @@ class Order extends Model
      */
     public function getOrderStatusColor(): string
     {
+        // If payment is fully paid but order status is pending_payment, show as approved color
+        if ($this->order_status === 'pending_payment' && $this->isFullyPaid()) {
+            return 'info';
+        }
+        
         return match($this->order_status) {
             'pending_payment' => 'warning',
             'approved' => 'info',
@@ -232,6 +242,7 @@ class Order extends Model
             'in_production' => 'In Production',
             'finishing' => 'Finishing',
             'ready_for_delivery' => 'Ready for Delivery',
+            'delivered_to_brayne' => 'Delivered to Brayne',
         ];
     }
 
@@ -261,8 +272,8 @@ class Order extends Model
         }
         
         if ($user->isFactory()) {
-            // Factory can only update approved orders to production statuses
-            return in_array($this->order_status, ['approved', 'in_production', 'finishing', 'ready_for_delivery']);
+            // Factory can update approved orders through production and delivery to Brayne
+            return in_array($this->order_status, ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne']);
         }
         
         return false; // Distributors cannot update status
@@ -289,12 +300,12 @@ class Order extends Model
         }
         
         if ($user->isFactory()) {
-            // Factory can only move forward in the production process
+            // Factory can move through production and delivery to Brayne
             return match($this->order_status) {
                 'approved' => ['in_production' => 'In Production'],
                 'in_production' => ['finishing' => 'Finishing'],
                 'finishing' => ['ready_for_delivery' => 'Ready for Delivery'],
-                'ready_for_delivery' => [], // Factory stops here, admin handles final delivery
+                'ready_for_delivery' => ['delivered_to_brayne' => 'Delivered to Brayne'],
                 default => []
             };
         }

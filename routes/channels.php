@@ -46,7 +46,7 @@ Broadcast::channel('order.{id}', function ($user, $id) {
 
     // Factory can access production orders
     if ($user->isFactory()) {
-        $productionStatuses = ['approved', 'in_production', 'finishing', 'ready_for_delivery'];
+        $productionStatuses = ['approved', 'in_production', 'finishing', 'ready_for_delivery', 'delivered_to_brayne'];
         return in_array($order->order_status, $productionStatuses);
     }
 
