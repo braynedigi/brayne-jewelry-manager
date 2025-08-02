@@ -1,0 +1,82 @@
+FROM php:8.2-fpm
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    nodejs \
+    npm \
+    nginx \
+    supervisor \
+    libicu-dev \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    libwebp-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Copy existing application directory
+COPY . .
+
+# Install PHP dependencies
+RUN composer install --optimize-autoloader --no-dev
+
+# Install Node.js dependencies and build assets
+RUN npm install && npm run build
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/sites-available/default
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+\n\
+# Start PHP-FPM\n\
+php-fpm -D\n\
+\n\
+# Wait for database to be ready\n\
+echo "Waiting for database..."\n\
+sleep 10\n\
+\n\
+# Generate app key if not set\n\
+if [ -z "$APP_KEY" ]; then\n\
+    echo "Generating application key..."\n\
+    php artisan key:generate --force\n\
+fi\n\
+\n\
+# Run migrations\n\
+echo "Running database migrations..."\n\
+php artisan migrate --force\n\
+\n\
+# Clear and cache config\n\
+echo "Caching configuration..."\n\
+php artisan config:cache\n\
+php artisan route:cache\n\
+php artisan view:cache\n\
+\n\
+# Start nginx\n\
+echo "Starting nginx..."\n\
+nginx -g "daemon off;"' > /usr/local/bin/start.sh \
+    && chmod +x /usr/local/bin/start.sh
+
+EXPOSE 80
+
+CMD ["/usr/local/bin/start.sh"] 
