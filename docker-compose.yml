@@ -2,8 +2,7 @@ version: '3.8'
 services:
     app:
         image: 'php:8.2-apache'
-        ports:
-            - '80:80'
+        container_name: app
         volumes:
             - '.:/var/www/html'
         working_dir: /var/www/html
