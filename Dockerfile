@@ -163,6 +163,10 @@ chmod 666 /var/www/html/database/database.sqlite\n\
 echo "Running database migrations..."\n\
 php artisan migrate --force\n\
 \n\
+echo "Running database seeders..."\n\
+php artisan db:seed --force\n\
+php artisan db:seed --class=ColorSettingsSeeder --force\n\
+\n\
 # Clear and cache config\n\
 echo "Caching configuration..."\n\
 php artisan config:clear\n\
